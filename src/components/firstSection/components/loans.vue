@@ -1,0 +1,55 @@
+<template>
+  <div class="w-[405.08px] h-[478px]">
+    <div
+      class="loan w-[397.61px] h-[184.98px] rounded-[5.8px] p-[20px] bg-[#FFFFFF]"
+    >
+      <div class="flex justify-between">
+        <h2 class="text-[20px] font-[500]">Loan</h2>
+        <EllipsisVertical class="text-[36px]" />
+      </div>
+
+      <h2
+        class="font-[700] text-[32px] leading-[42.5px] tracking-0 text-[#F60A0A] py-[20px]"
+      >
+        -N 103,500,400.00
+      </h2>
+      <p
+        class="font-[600] text-[15px] leading-[23.18px] tracking-0 text-[#344054]"
+      >
+        Amounts to be paid
+      </p>
+    </div>
+
+    <div
+      class="w-[399px] h-[255px] rounded-[5.8px] p-[20px] mt-[20px] bg-[#FFFFFF]"
+    >
+      <div class="flex justify-between">
+        <h2
+          class="font-[700] text-[19.32px] leading-[28.98px] tracking-0 text-[#101828] space-y-[19.32px]"
+        >
+          Saved Beneficiaries
+        </h2>
+        <div>See All</div>
+      </div>
+
+      <div class="beneficiaries">
+        <div class="flex items-center gap-[20px] border-[0.95px] border-[#EAECF0] rounded-[7px] p-2 mt-[10px] ">
+          <Img
+            src="/images/bene.jpg"
+            alt="images-of-beneficiaries"
+            class="w-[38.64px] h-[38.64px] rounded-[193.19px]"
+          />
+          <h2
+            class="font-[700] text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
+          >
+            Kathlyn man
+          </h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { EllipsisVertical } from "lucide-vue-next";
+</script>
