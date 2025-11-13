@@ -8,20 +8,20 @@
 
     <ul class="text-white list-none flex flex-col gap-[20px] py-[100px]">
       <li
-        v-for="item in sideBarMenu"
-        :key="item.name"
+        v-for="(item, index) in sideBarMenu"
+        :key="index"
         :class="[
           'flex gap-[30px] items-center w-[235px] h-[46px] py-[7.73px] px-[11.59px] ',
-          item.name.toLowerCase() === 'savings'
+          item.name.toLowerCase() === setId.toLowerCase()
             ? 'rounded-[5.8px] bg-[#800080]'
             : '',
         ]"
+        @click="handleSideBarClick(item.name)"
       >
         <component :is="item.icon" class="text-[36px]" />
-        <span
-          class="font-[600] text-[15.46px] leading-[231.8px] tracking-0 text-[#FCFCFD]"
-          >{{ item.name }}</span
-        >
+        <span class="font-[600] text-[15.46px] tracking-0 text-[#FCFCFD]">{{
+          item.name
+        }}</span>
       </li>
     </ul>
   </div>
@@ -39,7 +39,9 @@ import {
   SquaresExclude,
   UserRoundPen,
 } from "lucide-vue-next";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const sideBarMenu = ref([
   {
     icon: LayoutDashboard,
@@ -75,4 +77,12 @@ const sideBarMenu = ref([
     name: "Setting",
   },
 ]);
+
+const setId = ref("");
+
+const handleSideBarClick = (id) => {
+  console.log("ID", id);
+  setId.value = id;
+  router.push(`/${id.toLowerCase().replace(/\s+/g, "-")}`);
+};
 </script>

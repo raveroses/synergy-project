@@ -1,9 +1,13 @@
 <template>
-  <div class="w-[1004px] h-[478px] p-[50px]">
-    <loans />
+  <div class="">
+    <!-- <div class="flex gap-[100px] w-[1004px] h-[478px]"> -->
+      <!-- <loans /> -->
+      <insight />
+    <!-- </div> -->
   </div>
 </template>
 
 <script setup>
-import loans from "./components/loans.vue";
+// import loans from "./components/loans.vue";
+import insight from "./components/insight.vue";
 </script>
