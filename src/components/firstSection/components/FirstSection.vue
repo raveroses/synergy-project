@@ -9,5 +9,5 @@
 
 <script setup>
 // import loans from "./components/loans.vue";
-import insight from "./components/insight.vue";
+import insight from '../../insight.vue';
 </script>

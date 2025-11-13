@@ -75,10 +75,10 @@ const currentValue = computed(() => {
     return props.loanPageProps.savings || { name: "", amount: "", caption: "" };
   } else if (route.path.includes("loan")) {
     return props.loanPageProps.loan || { name: "", amount: "", caption: "" };
+  } else if (route.path.includes("my-account")) {
+    return props.loanPageProps.savings || { name: "", amount: "", caption: "" };
   }
 
   return { name: "", amount: "", caption: "" };
 });
-
-
 </script>

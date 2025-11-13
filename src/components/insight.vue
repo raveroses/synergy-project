@@ -15,5 +15,5 @@
 
 <script setup>
 import { EllipsisVertical } from "lucide-vue-next";
-import BarChat from "../../../charts/BarChat.vue";
+import BarChat from "../charts/BarChat.vue";
 </script>
