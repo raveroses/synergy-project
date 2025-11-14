@@ -38,7 +38,7 @@
             />
           </div>
           <div>
-            <h2 class="font-[700] text-[18px] leading-[28.98px]">Username</h2>
+            <h2 class="font-bold text-[18px] leading-[28.98px]">Username</h2>
           </div>
           <div class="arrow-down text-[18px]">
             <svg

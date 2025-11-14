@@ -1,34 +1,35 @@
 <template>
   <div class="w-[290px] h-[1011px] bg-[#2E052E] p-[30px]">
     <h2
-      class="text-white text-[32px] font-[700] tracking-0 leading-[23.18px] text-center"
+      class="text-white text-[32px] font-bold tracking-0 leading-[23.18px] text-center"
     >
       Synergy
     </h2>
 
-    <ul class="text-white list-none flex flex-col gap-[20px] py-[100px]">
-      <li
-        v-for="(item, index) in sideBarMenu"
-        :key="index"
-        :class="[
-          'flex gap-[30px] items-center w-[235px] h-[46px] py-[7.73px] px-[11.59px] ',
-          item.name.toLowerCase() === setId.toLowerCase()
-            ? 'rounded-[5.8px] bg-[#800080]'
-            : '',
-        ]"
-        @click="handleSideBarClick(item.name)"
-      >
-        <component :is="item.icon" class="text-[36px]" />
-        <span class="font-[600] text-[15.46px] tracking-0 text-[#FCFCFD]">{{
-          item.name
-        }}</span>
+    <ul class="text-white list-none flex flex-col gap-5 py-[100px]">
+      <li v-for="(item, index) in sideBarMenu" :key="index">
+        <router-link
+          :to="`${item.path}`"
+          :class="[
+            'flex gap-[30px] items-center w-[235px] h-[46px] py-[7.73px] px-[11.59px] cursor-pointer ',
+            item.path.toLowerCase() === currentPath
+              ? 'rounded-[5.8px] bg-[#800080]'
+              : '',
+          ]"
+        >
+          <component :is="item.icon" class="text-[36px]" />
+          <span
+            class="font-semibold text-[15.46px] tracking-0 text-[#FCFCFD]"
+            >{{ item.name }}</span
+          >
+        </router-link>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import {
   BanknoteArrowUp,
   Cog,
@@ -37,52 +38,63 @@ import {
   LayoutDashboard,
   Settings,
   SquaresExclude,
-  UserRoundPen,
+  // UserRoundPen,
 } from "lucide-vue-next";
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
-const router = useRouter();
+const route = useRoute();
+const currentPath = ref(route.path);
+
 const sideBarMenu = ref([
   {
     icon: LayoutDashboard,
     name: "My Account",
+    path: "/",
   },
 
   {
     icon: HandCoins,
     name: "Savings",
+    path: "/savings",
   },
   {
     icon: Cog,
     name: "Loans",
+    path: "/loans",
   },
   {
     icon: SquaresExclude,
     name: "Investments",
+    path: "/investments",
   },
   {
     icon: BanknoteArrowUp,
     name: "Fund Transfer",
+    path: "/fund-transfer",
   },
   {
     icon: CreditCard,
     name: "Bill Payment ",
+    path: "/bill-payment",
   },
-  {
-    icon: UserRoundPen,
-    name: "Profile",
-  },
+  // {
+  //   icon: UserRoundPen,
+  //   name: "Profile",
+  //   path: "/profile",
+  // },
   {
     icon: Settings,
     name: "Setting",
+    path: "/setting",
   },
 ]);
 
-const setId = ref("");
+watch(
+  () => route.path,
+  (newPath) => {
+    currentPath.value = newPath;
+  }
+);
 
-const handleSideBarClick = (id) => {
-  console.log("ID", id);
-  setId.value = id;
-  router.push(`/${id.toLowerCase().replace(/\s+/g, "-")}`);
-};
+console.log(currentPath.value);
 </script>

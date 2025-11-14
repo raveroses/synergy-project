@@ -7,27 +7,26 @@
         <Header />
       </slot>
 
-      <!-- <main class="p-8">
-        <slot></slot>
-      </main> -->
-
       <div
         v-if="
+          route.path === '/' ||
           route.path.includes('savings') ||
-          route.path.includes('loans') ||
-          route.path.includes('my-account')
+          route.path.includes('loans')
         "
-class="p-[50px]"
->
+        class="p-[50px]"
+      >
         <slot name="data">
-          <div class="flex justify-between" >
+          <div class="flex justify-between">
             <loans :loanPageProps="loanPageProps" />
             <FirstSection />
           </div>
-          <div class="my-[20px]">
+          <div class="my-5">
             <Transaction />
           </div>
         </slot>
+      </div>
+      <div v-else class="p-[50px]">
+        <router-view />
       </div>
     </div>
   </div>
