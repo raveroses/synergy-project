@@ -1,10 +1,14 @@
 <template>
   <div class="flex relative">
-    <Sidebar />
+    <Sidebar
+      v-if="!route.path.includes('signup') && !route.path.includes('login')"
+    />
 
     <div class="flex-1">
       <slot name="header">
-        <Header />
+        <Header
+          v-if="!route.path.includes('signup') && !route.path.includes('login')"
+        />
       </slot>
 
       <div
@@ -38,7 +42,7 @@ import Header from "./header/Header.vue";
 import FirstSection from "./firstSection/components/FirstSection.vue";
 import Transaction from "./Transaction.vue";
 import loans from "./loans.vue";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 
 const loanPageProps = ref({
@@ -55,4 +59,11 @@ const loanPageProps = ref({
 });
 
 const route = useRoute();
+console.log(route.path);
+console.log(route.path.includes("signup"));
+// const currentPath = ref("");
+
+// watchEffect(() => {
+//   currentPath.value = route.path;
+// });
 </script>
