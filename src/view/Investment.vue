@@ -1,5 +1,9 @@
 <template>
-  <h1>hhhh</h1>
+  <cardsInvestment />
+  <PieChart />
 </template>
 
-<script setup></script>
+<script setup>
+import cardsInvestment from "../Investment/cardsInvestment.vue";
+import PieChart from "../charts/PieChart.vue";
+</script>

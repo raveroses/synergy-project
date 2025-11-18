@@ -29,7 +29,7 @@
           </div>
         </slot>
       </div>
-      <div v-else class="p-[50px]">
+      <div v-else class="p-[30px]">
         <router-view />
       </div>
     </div>
