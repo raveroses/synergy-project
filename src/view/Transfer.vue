@@ -1,30 +1,52 @@
 <template>
-  <div class="flex justify-between items-start w-full">
+  <div class="flex justify-between items-start w-full relative">
     <div class="w-[60%] flex flex-col gap-6">
       <h2 class="text-2xl font-bold">Welcome, Odekunle Waris</h2>
       <h2 class="text-[15px] font-semibold my-2">Quick actions</h2>
-      <div>
+      <div class="flex items-center gap-10">
         <button
-          class="flex gap-3 border border-[#800080] p-1 rounded font-semibold text-[#800080]"
+          class="w-[150px] flex gap-3 border border-[#800080] p-1 rounded font-semibold text-[#800080] cursor-pointer"
+          @click="handleIsTransfer"
         >
           <span>
             <Send />
           </span>
-          <span>Send funds</span>
+          <span>Save Funds</span>
+        </button>
+        <button
+          class="w-[150px] flex gap-3 border border-[#800080] p-1 rounded font-semibold text-[#800080] cursor-pointer"
+          @click="handleIsLoan"
+        >
+          <span>
+            <Send />
+          </span>
+          <span>Secure Loan</span>
         </button>
       </div>
       <div
-        class="balance flex justify-between items-center border border-[#800080] rounded-xl p-6"
+        class="balance flex flex-col justify-between gap-5 border border-[#800080] rounded-xl p-6"
       >
-        <div>
-          <h2 class="text-xl text-[#800080] font-semibold">Balance</h2>
-          <h1 class="text-4xl font-semibold my-3 text-[#800080]">$300,000</h1>
+        <div class="flex justify-between text-[#800080]">
+          <div class="font-semibold">Account Number</div>
+          <div class="font-bold text-[18px]">8163700384</div>
         </div>
-        <div class="flex items-center gap-1 bg-gray-200 rounded p-2">
-          <div class="text-white bg-[#800080] rounded-full p-1 text-[15px]">
-            <BadgePlus />
+
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-xl text-[#800080] font-semibold">Balance</h2>
+            <h1
+              class="text-4xl font-semibold my-3 text-[#800080] flex items-center"
+            >
+              <NairaIcon /> <span> {{ totalSaving }} </span>
+            </h1>
           </div>
-          <h2 class="text-[#800080] text-md font-medium">Top - up</h2>
+
+          <div class="flex items-center gap-1 bg-gray-200 rounded p-2">
+            <div class="text-white bg-[#800080] rounded-full p-1 text-[15px]">
+              <BadgePlus />
+            </div>
+            <h2 class="text-[#800080] text-md font-medium">Top - up</h2>
+          </div>
         </div>
       </div>
 
@@ -121,50 +143,341 @@
     </div>
   </div>
 
-  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-  <div class="absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white ">
+  <div
+    class="transfer absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    v-show="isTransfer"
+  >
     <div class="flex gap-40 font-bold my-10">
       <h1 class="text-[#800080] text-[20px]">Synergy</h1>
-      <h2 class="text-xl text-center">Send funds</h2>
+      <h2 class="text-xl text-center">Save funds</h2>
     </div>
-    <form class="flex flex-col gap-5">
+    <form
+      class="flex flex-col gap-5"
+      @submit.prevent="savingFund.handleSubmission"
+    >
       <div>
-        <label for="account name" class="text-[14px] font-semibold">Account Number</label>
-        <input type="text" class="w-full border border-[#800080] p-3 rounded" />
-        <div>Balance 300000</div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Number</label
+        >
+        <input
+          type="text"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+          v-model="savingFund.acctNumber"
+        />
+        <div>
+          <span>Balance :</span> <span>{{ savingFund.savingsMoney }}</span>
+        </div>
       </div>
       <div>
-        <label for="account name" class="text-[14px] font-semibold">Account Name</label>
-        <input type="text" class="w-full border border-[#800080] p-3 rounded" />
-        <div>Account Name :Odekunle waris</div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Name</label
+        >
+        <input
+          type="text"
+          v-model="savingFund.accountName"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          Account Name :<span> {{ savingFund.accountName }}</span>
+        </div>
       </div>
       <div>
-        <label for="account name" class="text-[14px] font-semibold">Amount</label>
-        <div class=" flex items-center gap-1">
-          <span class="bg-gray-400 text-white p-3 rounded"><DollarSign /></span>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Amount</label
+        >
+        <div class="flex items-center gap-1">
+          <span class="bg-gray-400 text-white p-3 rounded"><NairaIcon /></span>
           <input
             type="text"
-            class="w-full border border-[#800080] p-3 rounded"
+            v-model="savingFund.savingsMoney"
+            class="w-full border border-[#800080] p-3 rounded outline-none"
           />
         </div>
       </div>
       <button
+        type="submit"
         class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
       >
-        Send funds
+        Save funds
       </button>
     </form>
   </div>
+
+  <div
+    class="loan absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    v-show="isLoan"
+  >
+    <div class="flex gap-40 font-bold my-10">
+      <h1 class="text-[#800080] text-[20px]">Synergy</h1>
+      <h2 class="text-xl text-center">Loan Application</h2>
+    </div>
+    <form
+      class="flex flex-col gap-5"
+      @submit.prevent="userLoan.handleSubmission"
+    >
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Number</label
+        >
+        <input
+          type="text"
+          v-model="userLoan.acctNumber"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          <span>Balance :</span> <span>{{ savingFund.savingsMoney }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Name</label
+        >
+        <input
+          type="text"
+          v-model="userLoan.acctName"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          Account Name :<span>{{ userLoan.acctName }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Amount</label
+        >
+        <div class="flex items-center gap-1">
+          <span class="bg-gray-400 text-white p-3 rounded"><NairaIcon /></span>
+          <input
+            type="text"
+            v-model="userLoan.loanAmount"
+            class="w-full border border-[#800080] p-3 rounded outline-none"
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+      >
+        Apply Loan
+      </button>
+    </form>
+  </div>
+  <div
+    class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+    v-show="isTransfer || isLoan"
+  ></div>
 </template>
 
 <script setup>
 import {
   BadgePlus,
   Copy,
-  DollarSign,
+  // DollarSign,
   ReceiptText,
   Search,
   Send,
   TabletSmartphone,
 } from "lucide-vue-next";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import NairaIcon from "../components/icons/NairaIcon.vue";
+import { useToast } from "vue-toast-notification";
+const isTransfer = ref(false);
+const isLoan = ref(false);
+const toast = useToast();
+let amountSaving = ref([]);
+onMounted(() => {
+  const getter = localStorage.getItem("savingAmountStore");
+  amountSaving.value = getter ? JSON.parse(getter) : [];
+});
+
+const totalSaving = computed(() => {
+  return amountSaving.value.reduce((acc, val) => acc + Number(val), 0);
+});
+
+let acctDetail = ref({
+  accountName: "",
+  acctNumber: "",
+  savingsMoney: "",
+});
+let loanDetail = ref({
+  acctName: "",
+  acctNumber: "",
+  loanAmount: "",
+});
+const handleIsTransfer = (event) => {
+  event.stopPropagation();
+  isTransfer.value = true;
+};
+
+const handleIsLoan = (event) => {
+  event.stopPropagation();
+  isLoan.value = true;
+};
+
+const savingFund = ref({
+  savingsMoney: null,
+  acctNumber: "",
+  accountName: "",
+  handleValidation: function () {
+    if (isNaN(Number(this.savingsMoney)) || !this.savingsMoney) {
+      toast.error("Please, Input valid Amount");
+      console.log("Please, Input valid Amount");
+      return;
+    }
+
+    if (!this.accountName) {
+      toast.error("Please, Input valid Account Name");
+      console.log("Please, Input valid Account Name");
+      return;
+    }
+
+    if (
+      isNaN(Number(this.acctNumber)) ||
+      !this.acctNumber ||
+      !this.acctNumber
+    ) {
+      toast.error("Please, Input valid Number");
+      console.log("Please, Input valid Number");
+      return;
+    }
+
+    if (Number(this.acctNumber) !== Number(8163700384)) {
+      toast.error("Please, enter account number on the screen");
+      console.log("Please, enter account number on the screen");
+      return;
+    }
+    return true;
+  },
+
+  handleSubmission: function () {
+    try {
+      if (!this.handleValidation()) return;
+      acctDetail.value = {
+        accountName: this.accountName,
+        acctNumber: this.acctNumber,
+        savingsMoney: this.savingsMoney,
+      };
+
+      localStorage.setItem("savingstore", JSON.stringify(acctDetail.value));
+
+      amountSaving.value.push(this.savingsMoney);
+      localStorage.setItem(
+        "savingAmountStore",
+        JSON.stringify(amountSaving.value)
+      );
+      console.log("Saved:", JSON.parse(JSON.stringify(acctDetail.value)));
+      this.accountName = "";
+      this.acctNumber = "";
+      this.savingsMoney = "";
+    } catch (e) {
+      console.log(e.message);
+    }
+  },
+});
+
+// console.log(acctDetail.value);
+function Loans(acctName, loanAmount, acctNumber) {
+  this.acctName = acctName;
+  this.acctNumber = acctNumber;
+  this.loanAmount = loanAmount;
+  this.handleValidation = function () {
+    if (isNaN(Number(this.loanAmount)) || !this.loanAmount) {
+      toast.error("Please, Input valid Amount");
+      console.log("Please, Input valid Amount");
+      return;
+    }
+
+    if (!this.acctName) {
+      toast.error("Please, Input valid Account Name");
+      console.log("Please, Input valid Account Name");
+      return;
+    }
+
+    if (isNaN(Number(this.acctNumber)) || !this.acctNumber) {
+      toast.error("Please, Input valid Number");
+      console.log("Please, Input valid Number");
+      return;
+    }
+
+    if (Number(this.acctNumber) !== 8163700384) {
+      toast.error("Please, enter account number on the screen");
+      console.log("Please, enter account number on the screen");
+      return;
+    }
+
+    // eligibility
+
+    const saving = Number(totalSaving.value);
+    const loan = Number(this.loanAmount);
+
+    if (loan > 100000) {
+      toast.error("Sorry, we can't borrow you more than 100,000");
+      return;
+    }
+
+    if (loan >= 50000 && saving < 10000) {
+      toast.error(
+        "Eligibility failed. You must have at least ₦10,000 in savings."
+      );
+      return;
+    }
+
+    if (loan > 50000 && saving < 20000) {
+      toast.error(
+        "Eligibility failed. You must have at least ₦20,000 in savings."
+      );
+      return;
+    }
+
+    return true;
+  };
+  this.handleSubmission = function () {
+    try {
+      if (!this.handleValidation()) return;
+      loanDetail.value = {
+        acctName: this.acctName,
+        acctNumber: this.acctNumber,
+        loanAmount: this.loanAmount,
+      };
+
+      localStorage.setItem("loanstore", JSON.stringify(loanDetail.value));
+      console.log("Saved:", JSON.parse(JSON.stringify(loanDetail.value)));
+      this.acctName = "";
+      this.acctNumber = "";
+      this.loanAmount = "";
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+}
+const userLoan = ref(new Loans());
+
+// console.log("Array", amountSaving.value);
+
+// console.log("TOTAL LOAN", totalSaving);
+
+onMounted(() => {
+  const transfer = document.querySelector(".transfer");
+  const loan = document.querySelector(".loan");
+
+  const handleDocumentClick = (e) => {
+    const target = e.target;
+
+    if (!(target instanceof Node)) return;
+
+    if (isTransfer.value && transfer && !transfer.contains(target)) {
+      isTransfer.value = false;
+    }
+
+    if (isLoan.value && loan && !loan.contains(target)) {
+      isLoan.value = false;
+    }
+  };
+
+  window.addEventListener("click", handleDocumentClick);
+
+  onBeforeUnmount(() => {
+    window.removeEventListener("click", handleDocumentClick);
+  });
+});
 </script>

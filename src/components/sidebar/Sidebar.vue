@@ -96,5 +96,5 @@ watch(
   }
 );
 
-console.log(currentPath.value);
+// console.log(currentPath.value);
 </script>

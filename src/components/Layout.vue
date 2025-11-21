@@ -59,8 +59,8 @@ const loanPageProps = ref({
 });
 
 const route = useRoute();
-console.log(route.path);
-console.log(route.path.includes("signup"));
+// console.log(route.path);
+// console.log(route.path.includes("signup"));
 // const currentPath = ref("");
 
 // watchEffect(() => {
