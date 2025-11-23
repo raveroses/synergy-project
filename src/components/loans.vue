@@ -6,28 +6,34 @@
     >
       <div class="flex justify-between">
         <h2 class="text-[20px] font-medium">
-          {{ currentValue.status ?? "name" }}
+          {{
+            route.path.includes("loan")
+              ? loanDetail.acctName
+              : acctDetail.accountName
+          }}
         </h2>
         <EllipsisVertical class="text-[36px]" />
       </div>
       <h2
         :class="[
           'font-bold text-[32px] leading-[42.5px] py-5',
-          currentValue.status === 'Loans' ? 'text-[#F60A0A]' : 'text-black',
+          route.path.includes('loan') ? 'text-[#F60A0A]' : 'text-black',
         ]"
       >
-        {{ currentValue.amount ?? "amount" }}
+        {{ route.path.includes("loan") ? totaLoan : totalSaving }}
       </h2>
       <p
         class="font-semibold text-[15px] leading-[23.18px] tracking-0 text-[#344054]"
       >
-        {{ currentValue.caption ?? "caption" }}
+        {{
+          route.path.includes("loan")
+            ? "Account to be paid"
+            : "Balance Available"
+        }}
       </p>
     </div>
 
-    <div
-      class="w-[399px] h-[255px] rounded-[5.8px] p-5 mt-5 bg-[#FFFFFF]"
-    >
+    <div class="w-[399px] h-[255px] rounded-[5.8px] p-5 mt-5 bg-[#FFFFFF]">
       <div class="flex justify-between">
         <h2
           class="font-bold text-[19.32px] leading-[28.98px] tracking-0 text-[#101828] space-y-[19.32px]"
@@ -65,6 +71,11 @@ import { EllipsisVertical } from "lucide-vue-next";
 import { useRoute } from "vue-router";
 import { computed } from "vue";
 const route = useRoute();
+import { useTransaction } from "./useTransaction";
+import { storeToRefs } from "pinia";
+const fundDetails = useTransaction();
+const { loanDetail, acctDetail, totalSaving, totalLoan } =
+  storeToRefs(fundDetails);
 
 const currentValue = computed(() => {
   if (!props.loanPageProps) {
@@ -72,13 +83,25 @@ const currentValue = computed(() => {
   }
 
   if (route.path.includes("savings")) {
-    return props.loanPageProps.savings || { name: "", amount: "", caption: "" };
+    return (
+      acctDetail.value ?? {
+        savingsMoney: null,
+        acctNumber: "",
+        accountName: "",
+      }
+    );
   } else if (route.path.includes("loan")) {
-    return props.loanPageProps.loan || { name: "", amount: "", caption: "" };
+    return (
+      loanDetail.value ?? {
+        savingsMoney: null,
+        acctNumber: "",
+        accountName: "",
+      }
+    );
   } else if (route.path.includes("my-account")) {
-    return props.loanPageProps.savings || { name: "", amount: "", caption: "" };
+    return acctDetail.value ?? { acctName: "", acctNumber: "", loanAmount: "" };
   }
 
-  return { name: "", amount: "", caption: "" };
+  // return { name: "", amount: "", caption: "" };
 });
 </script>

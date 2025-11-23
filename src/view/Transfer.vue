@@ -269,6 +269,8 @@
 </template>
 
 <script setup>
+import { useTransaction } from "../components/useTransaction";
+import { storeToRefs } from "pinia";
 import {
   BadgePlus,
   Copy,
@@ -278,188 +280,20 @@ import {
   Send,
   TabletSmartphone,
 } from "lucide-vue-next";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import NairaIcon from "../components/icons/NairaIcon.vue";
-import { useToast } from "vue-toast-notification";
-const isTransfer = ref(false);
-const isLoan = ref(false);
-const toast = useToast();
-let amountSaving = ref([]);
-onMounted(() => {
-  const getter = localStorage.getItem("savingAmountStore");
-  amountSaving.value = getter ? JSON.parse(getter) : [];
-});
+import { onMounted } from "vue";
+import { onBeforeUnmount } from "vue";
+const fundsDetail = useTransaction();
+const { isTransfer, isLoan, totalSaving, savingFund, userLoan } =
+  storeToRefs(fundsDetail);
 
-const totalSaving = computed(() => {
-  return amountSaving.value.reduce((acc, val) => acc + Number(val), 0);
-});
-
-let acctDetail = ref({
-  accountName: "",
-  acctNumber: "",
-  savingsMoney: "",
-});
-let loanDetail = ref({
-  acctName: "",
-  acctNumber: "",
-  loanAmount: "",
-});
-const handleIsTransfer = (event) => {
-  event.stopPropagation();
-  isTransfer.value = true;
-};
-
-const handleIsLoan = (event) => {
-  event.stopPropagation();
-  isLoan.value = true;
-};
-
-const savingFund = ref({
-  savingsMoney: null,
-  acctNumber: "",
-  accountName: "",
-  handleValidation: function () {
-    if (isNaN(Number(this.savingsMoney)) || !this.savingsMoney) {
-      toast.error("Please, Input valid Amount");
-      console.log("Please, Input valid Amount");
-      return;
-    }
-
-    if (!this.accountName) {
-      toast.error("Please, Input valid Account Name");
-      console.log("Please, Input valid Account Name");
-      return;
-    }
-
-    if (
-      isNaN(Number(this.acctNumber)) ||
-      !this.acctNumber ||
-      !this.acctNumber
-    ) {
-      toast.error("Please, Input valid Number");
-      console.log("Please, Input valid Number");
-      return;
-    }
-
-    if (Number(this.acctNumber) !== Number(8163700384)) {
-      toast.error("Please, enter account number on the screen");
-      console.log("Please, enter account number on the screen");
-      return;
-    }
-    return true;
-  },
-
-  handleSubmission: function () {
-    try {
-      if (!this.handleValidation()) return;
-      acctDetail.value = {
-        accountName: this.accountName,
-        acctNumber: this.acctNumber,
-        savingsMoney: this.savingsMoney,
-      };
-
-      localStorage.setItem("savingstore", JSON.stringify(acctDetail.value));
-
-      amountSaving.value.push(this.savingsMoney);
-      localStorage.setItem(
-        "savingAmountStore",
-        JSON.stringify(amountSaving.value)
-      );
-      console.log("Saved:", JSON.parse(JSON.stringify(acctDetail.value)));
-      this.accountName = "";
-      this.acctNumber = "";
-      this.savingsMoney = "";
-    } catch (e) {
-      console.log(e.message);
-    }
-  },
-});
-
-// console.log(acctDetail.value);
-function Loans(acctName, loanAmount, acctNumber) {
-  this.acctName = acctName;
-  this.acctNumber = acctNumber;
-  this.loanAmount = loanAmount;
-  this.handleValidation = function () {
-    if (isNaN(Number(this.loanAmount)) || !this.loanAmount) {
-      toast.error("Please, Input valid Amount");
-      console.log("Please, Input valid Amount");
-      return;
-    }
-
-    if (!this.acctName) {
-      toast.error("Please, Input valid Account Name");
-      console.log("Please, Input valid Account Name");
-      return;
-    }
-
-    if (isNaN(Number(this.acctNumber)) || !this.acctNumber) {
-      toast.error("Please, Input valid Number");
-      console.log("Please, Input valid Number");
-      return;
-    }
-
-    if (Number(this.acctNumber) !== 8163700384) {
-      toast.error("Please, enter account number on the screen");
-      console.log("Please, enter account number on the screen");
-      return;
-    }
-
-    // eligibility
-
-    const saving = Number(totalSaving.value);
-    const loan = Number(this.loanAmount);
-
-    if (loan > 100000) {
-      toast.error("Sorry, we can't borrow you more than 100,000");
-      return;
-    }
-
-    if (loan >= 50000 && saving < 10000) {
-      toast.error(
-        "Eligibility failed. You must have at least ₦10,000 in savings."
-      );
-      return;
-    }
-
-    if (loan > 50000 && saving < 20000) {
-      toast.error(
-        "Eligibility failed. You must have at least ₦20,000 in savings."
-      );
-      return;
-    }
-
-    return true;
-  };
-  this.handleSubmission = function () {
-    try {
-      if (!this.handleValidation()) return;
-      loanDetail.value = {
-        acctName: this.acctName,
-        acctNumber: this.acctNumber,
-        loanAmount: this.loanAmount,
-      };
-
-      localStorage.setItem("loanstore", JSON.stringify(loanDetail.value));
-      console.log("Saved:", JSON.parse(JSON.stringify(loanDetail.value)));
-      this.acctName = "";
-      this.acctNumber = "";
-      this.loanAmount = "";
-    } catch (e) {
-      console.log(e.message);
-    }
-  };
-}
-const userLoan = ref(new Loans());
-
-// console.log("Array", amountSaving.value);
-
-// console.log("TOTAL LOAN", totalSaving);
+const { handleIsTransfer, handleIsLoan } = fundsDetail;
 
 onMounted(() => {
   const transfer = document.querySelector(".transfer");
   const loan = document.querySelector(".loan");
 
+  console.log(transfer);
   const handleDocumentClick = (e) => {
     const target = e.target;
 

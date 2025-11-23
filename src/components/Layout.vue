@@ -21,7 +21,7 @@
       >
         <slot name="data">
           <div class="flex justify-between">
-            <loans :loanPageProps="loanPageProps" />
+            <loans />
             <FirstSection />
           </div>
           <div class="my-5">
@@ -45,20 +45,21 @@ import loans from "./loans.vue";
 import { ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 
-const loanPageProps = ref({
-  savings: {
-    status: "Savings",
-    amount: 10350040000,
-    caption: "Balance Available",
-  },
-  loan: {
-    status: "Loans",
-    amount: -10350040000,
-    caption: "Amount to be paid",
-  },
-});
+// const loanPageProps = ref({
+//   savings: {
+//     status: "Savings",
+//     amount: 10350040000,
+//     caption: "Balance Available",
+//   },
+//   loan: {
+//     status: "Loans",
+//     amount: -10350040000,
+//     caption: "Amount to be paid",
+//   },
+// });
 
 const route = useRoute();
+
 // console.log(route.path);
 // console.log(route.path.includes("signup"));
 // const currentPath = ref("");
