@@ -20,7 +20,11 @@
           route.path.includes('loan') ? 'text-[#F60A0A]' : 'text-black',
         ]"
       >
-        {{ route.path.includes("loan") ? totaLoan : totalSaving }}
+        {{
+          route.path.includes("loan")
+            ? formattedTotalLoan
+            : formattedTotalSaving
+        }}
       </h2>
       <p
         class="font-semibold text-[15px] leading-[23.18px] tracking-0 text-[#344054]"
@@ -74,7 +78,7 @@ const route = useRoute();
 import { useTransaction } from "./useTransaction";
 import { storeToRefs } from "pinia";
 const fundDetails = useTransaction();
-const { loanDetail, acctDetail, totalSaving, totalLoan } =
+const { loanDetail, acctDetail, formattedTotalLoan, formattedTotalSaving } =
   storeToRefs(fundDetails);
 
 const currentValue = computed(() => {

@@ -3,9 +3,54 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useToast } from "vue-toast-notification";
 
 export const useTransaction = defineStore("detail", () => {
-  const isTransfer = ref(false);
+  const isSavings = ref(false);
   const isLoan = ref(false);
+  const isTransferFund = ref(false);
+  const isRepayment = ref(false);
   const toast = useToast();
+  const repaymentDetail = ref(
+    JSON.parse(localStorage.getItem("repaymentDetail")) || {
+      accountName: "",
+      accountNumber: null,
+      amount: null,
+      date: null,
+      id: null,
+    }
+  );
+
+  let acctDetail = ref(
+    JSON.parse(localStorage.getItem("acctDetail")) || {
+      accountName: "",
+      accountNumber: null,
+      savingsMoney: null,
+      date: null,
+      id: null,
+    }
+  );
+  let loanDetail = ref(
+    JSON.parse(localStorage.getItem("loanDetail")) || {
+      accountName: "",
+      accountNumber: null,
+      loanAmount: null,
+      date: null,
+      id: null,
+    }
+  );
+
+  let transferDetail = ref(
+    JSON.parse(localStorage.getItem("transferDetail")) || {
+      accountName: "",
+      accountNumber: null,
+      transferAmount: null,
+      date: null,
+      id: null,
+    }
+  );
+
+  const repaymentHistory = ref(
+    JSON.parse(localStorage.getItem("repaymentHistory")) || []
+  );
+
   let transactionHistory = ref(
     JSON.parse(localStorage.getItem("history")) || []
   );
@@ -13,52 +58,70 @@ export const useTransaction = defineStore("detail", () => {
   const totalSaving = computed(() => {
     return transactionHistory.value.reduce((acc, item) => {
       if ("savingsMoney" in item) {
-        return acc + Number(item.savingsMoney || 0);
+        acc += Number(item.savingsMoney) || 0;
+      }
+      if ("transferAmount" in item) {
+        acc -= Number(item.transferAmount) || 0;
       }
       return acc;
     }, 0);
   });
 
   const totalLoan = computed(() => {
-    return transactionHistory.value.reduce((acc, item) => {
+    const totalBorrowed = transactionHistory.value.reduce((acc, item) => {
       if ("loanAmount" in item) {
-        return acc + Number(item.loanAmount || 0);
+        return acc + Number(item.loanAmount);
       }
       return acc;
     }, 0);
+
+    const totalRepaid =
+      repaymentHistory.value.length > 0
+        ? repaymentHistory.value.reduce(
+            (accum, cur) => accum + Number(cur.amount),
+            0
+          )
+        : 0;
+
+    console.log("totalBorrowed", totalBorrowed);
+    console.log("totalRepaid", totalRepaid);
+    return totalBorrowed - totalRepaid;
   });
 
-  console.log(totalLoan.value);
+  const formattedTotalLoan = computed(() => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+    }).format(totalLoan.value);
+  });
+  const formattedTotalSaving = computed(() => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+    }).format(totalSaving.value);
+  });
 
-  let acctDetail = ref(
-    JSON.parse(localStorage.getItem("acctDetail")) || {
-      accountName: "",
-      acctNumber: "",
-      savingsMoney: "",
-      savingsDate: null,
-    }
-  );
-  let loanDetail = ref(
-    JSON.parse(localStorage.getItem("loanDetail")) || {
-      acctName: "",
-      acctNumber: "",
-      loanAmount: "",
-      loanDate: null,
-    }
-  );
-  const handleIsTransfer = (event) => {
+  const handleIsisSavings = (event) => {
     event.stopPropagation();
-    isTransfer.value = true;
+    isSavings.value = true;
   };
   const handleIsLoan = (event) => {
     event.stopPropagation();
     isLoan.value = true;
   };
+  const handleIsTransferFund = (event) => {
+    event.stopPropagation();
+    isTransferFund.value = true;
+  };
+  const handleIsRepayment = (event) => {
+    event.stopPropagation();
+    isRepayment.value = true;
+  };
 
   const savingFund = ref({
     savingsMoney: null,
-    acctNumber: "",
-    accountName: "",
+    accountNumber: null,
+    accountName: "odekunle waris ",
     handleValidation: function () {
       if (isNaN(Number(this.savingsMoney)) || !this.savingsMoney) {
         toast.error("Please, Input valid Amount");
@@ -66,23 +129,23 @@ export const useTransaction = defineStore("detail", () => {
         return;
       }
 
-      if (!this.accountName) {
-        toast.error("Please, Input valid Account Name");
-        console.log("Please, Input valid Account Name");
-        return;
-      }
+      // if (!this.accountName) {
+      //   toast.error("Please, Input valid Account Name");
+      //   console.log("Please, Input valid Account Name");
+      //   return;
+      // }
 
       if (
-        isNaN(Number(this.acctNumber)) ||
-        !this.acctNumber ||
-        !this.acctNumber
+        isNaN(Number(this.accountNumber)) ||
+        !this.accountNumber ||
+        !this.accountNumber
       ) {
         toast.error("Please, Input valid Number");
         console.log("Please, Input valid Number");
         return;
       }
 
-      if (Number(this.acctNumber) !== Number(8163700384)) {
+      if (Number(this.accountNumber) !== Number(8163700384)) {
         toast.error("Please, enter account number on the screen");
         console.log("Please, enter account number on the screen");
         return;
@@ -96,9 +159,10 @@ export const useTransaction = defineStore("detail", () => {
 
         acctDetail.value = {
           accountName: this.accountName,
-          acctNumber: this.acctNumber,
+          accountNumber: this.accountNumber,
           savingsMoney: this.savingsMoney,
-          savingsDate: new Date(),
+          date: new Date().toISOString(),
+          id: crypto.randomUUID(),
         };
 
         transactionHistory.value.push(acctDetail.value);
@@ -109,8 +173,8 @@ export const useTransaction = defineStore("detail", () => {
 
         localStorage.setItem("acctDetail", JSON.stringify(acctDetail.value));
         console.log("Saved:", JSON.parse(JSON.stringify(acctDetail.value)));
-        this.accountName = "";
-        this.acctNumber = "";
+        // this.accountName = "";
+        this.accountNumber = "";
         this.savingsMoney = "";
       } catch (e) {
         console.log(e.message);
@@ -118,9 +182,9 @@ export const useTransaction = defineStore("detail", () => {
     },
   });
 
-  function Loans(acctName, loanAmount, acctNumber) {
-    this.acctName = acctName;
-    this.acctNumber = acctNumber;
+  function Loans(loanAmount, accountNumber) {
+    this.accountName = "odekunle waris ";
+    this.accountNumber = accountNumber;
     this.loanAmount = loanAmount;
     this.handleValidation = function () {
       if (isNaN(Number(this.loanAmount)) || !this.loanAmount) {
@@ -129,19 +193,19 @@ export const useTransaction = defineStore("detail", () => {
         return;
       }
 
-      if (!this.acctName) {
-        toast.error("Please, Input valid Account Name");
-        console.log("Please, Input valid Account Name");
-        return;
-      }
+      // if (!this.accountName) {
+      //   toast.error("Please, Input valid Account Name");
+      //   console.log("Please, Input valid Account Name");
+      //   return;
+      // }
 
-      if (isNaN(Number(this.acctNumber)) || !this.acctNumber) {
+      if (isNaN(Number(this.accountNumber)) || !this.accountNumber) {
         toast.error("Please, Input valid Number");
         console.log("Please, Input valid Number");
         return;
       }
 
-      if (Number(this.acctNumber) !== 8163700384) {
+      if (Number(this.accountNumber) !== 8163700384) {
         toast.error("Please, enter account number on the screen");
         console.log("Please, enter account number on the screen");
         return;
@@ -177,10 +241,11 @@ export const useTransaction = defineStore("detail", () => {
       try {
         if (!this.handleValidation()) return;
         loanDetail.value = {
-          acctName: this.acctName,
-          acctNumber: this.acctNumber,
+          // accountName: this.accountName,
+          accountNumber: this.accountNumber,
           loanAmount: this.loanAmount,
-          loanDate: new Date(),
+          date: new Date().toISOString(),
+          id: crypto.randomUUID(),
         };
 
         // localStorage.setItem("loanstore", JSON.stringify(loanDetail.value));
@@ -193,9 +258,9 @@ export const useTransaction = defineStore("detail", () => {
         localStorage.setItem("loanDetail", JSON.stringify(loanDetail.value));
 
         console.log("Saved:", JSON.parse(JSON.stringify(loanDetail.value)));
-        this.acctName = "";
-        this.acctNumber = "";
-        this.loanAmount = "";
+        // this.accountName = "";
+        this.accountNumber = " ";
+        this.loanAmount = " ";
       } catch (e) {
         console.log(e.message);
       }
@@ -203,16 +268,181 @@ export const useTransaction = defineStore("detail", () => {
   }
   const userLoan = ref(new Loans());
 
+  const handleRepaymentValidation = () => {
+    if (
+      isNaN(Number(repaymentDetail.value.amount)) ||
+      !repaymentDetail.value.amount
+    ) {
+      toast.error("Please, Input valid Amount");
+      console.log("Please, Input valid Amount");
+      return;
+    }
+
+    if (
+      !repaymentDetail.value.accountName ||
+      repaymentDetail.value.accountName.toLowerCase().trim() !==
+        "odekunle waris".toLowerCase().trim()
+    ) {
+      toast.error("Please, Input valid Account Name");
+      console.log("Please, Input valid Account Name");
+      return;
+    }
+
+    if (
+      isNaN(Number(repaymentDetail.value.accountNumber)) ||
+      !repaymentDetail.value.accountNumber ||
+      !repaymentDetail.value.accountNumber
+    ) {
+      toast.error("Please, Input valid Number");
+      console.log("Please, Input valid Number");
+      return;
+    }
+
+    if (Number(repaymentDetail.value.accountNumber) !== Number(8163700384)) {
+      toast.error("Please, enter account number on the screen");
+      console.log("Please, enter account number on the screen");
+      return;
+    }
+    return true;
+  };
+
+  const handleRepaymentSubmission = () => {
+    try {
+      if (!handleRepaymentValidation()) return;
+
+      if (loanDetail.value.loanAmount <= 0) {
+        toast.error("You have no debt to pay");
+        console.log("You have no debt to pay");
+        return;
+      }
+
+      repaymentDetail.value = {
+        accountName: repaymentDetail.value.accountName,
+        accountNumber: repaymentDetail.value.accountNumber,
+        amount: repaymentDetail.value.amount,
+        date: new Date().toISOString(),
+        id: crypto.randomUUID(),
+      };
+
+      repaymentHistory.value.push(repaymentDetail.value);
+      localStorage.setItem(
+        "repaymentHistory",
+        JSON.stringify(repaymentHistory.value)
+      );
+
+      console.log("Saved:", JSON.parse(JSON.stringify(repaymentDetail.value)));
+      repaymentDetail.value = {
+        accountName: " ",
+        accountNumber: " ",
+        amount: " ",
+      };
+      localStorage.setItem(
+        "repaymentDetail",
+        JSON.stringify(repaymentDetail.value)
+      );
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+  const handleTransferValidation = () => {
+    if (
+      isNaN(Number(transferDetail.value.transferAmount)) ||
+      !transferDetail.value.transferAmount
+    ) {
+      toast.error("Please, Input valid Amount");
+      console.log("Please, Input valid Amount");
+      return;
+    }
+
+    if (!transferDetail.value.accountName) {
+      toast.error("Please, Input valid Account Name");
+      console.log("Please, Input valid Account Name");
+      return;
+    }
+
+    if (
+      isNaN(Number(transferDetail.value.accountNumber)) ||
+      !transferDetail.value.accountNumber
+    ) {
+      toast.error("Please, Input valid Number");
+      console.log("Please, Input valid Number");
+      return;
+    }
+
+    if (transferDetail.value.accountNumber.trim().length !== 10) {
+      toast.error("Invalid Account Number");
+      console.log("Invalid Account Number");
+      return;
+    }
+    return true;
+  };
+
+  const handleTransferSubmission = () => {
+    try {
+      if (!handleTransferValidation()) return;
+
+      if (acctDetail.value.savingsMoney <= 0) {
+        toast.error(" Insufficient Funds");
+        console.log("Insufficient Funds");
+        return;
+      }
+      // if (transferDetail.value.transferAmount) {
+      //   acctDetail.value.savingsMoney =
+      //     totalSaving.value - transferDetail.value.transferAmount;
+      // }
+
+      transferDetail.value = {
+        accountName: transferDetail.value.accountName,
+        accountNumber: transferDetail.value.accountNumber,
+        transferAmount: transferDetail.value.transferAmount,
+        date: new Date().toISOString(),
+        id: crypto.randomUUID(),
+      };
+
+      transactionHistory.value.push(transferDetail.value);
+      localStorage.setItem("history", JSON.stringify(transactionHistory.value));
+
+      console.log("Saved:", JSON.parse(JSON.stringify(transferDetail.value)));
+      transferDetail.value = {
+        accountName: " ",
+        accountNumber: " ",
+        transferAmount: " ",
+      };
+      localStorage.setItem(
+        "transferDetail",
+        JSON.stringify(transferDetail.value)
+      );
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
+
+  console.log(transferDetail.value);
+  const allHistory = computed(() => [
+    ...repaymentHistory.value,
+    ...transactionHistory.value,
+  ]);
+  console.log(totalSaving.value);
+
   return {
-    isTransfer,
+    isSavings,
     isLoan,
-    totalSaving,
     acctDetail,
     loanDetail,
-    handleIsTransfer,
+    handleIsisSavings,
     handleIsLoan,
     savingFund,
     userLoan,
-    totalLoan,
+    formattedTotalLoan,
+    formattedTotalSaving,
+    handleIsTransferFund,
+    handleIsRepayment,
+    isRepayment,
+    isTransferFund,
+    handleRepaymentSubmission,
+    repaymentDetail,
+    allHistory,
+    transferDetail,
+    handleTransferSubmission,
   };
 });

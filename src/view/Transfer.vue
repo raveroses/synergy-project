@@ -1,26 +1,32 @@
+<!-- @click="handleIsTransfer" -->
+<!-- @click="handleIsLoan" -->
+
 <template>
   <div class="flex justify-between items-start w-full relative">
     <div class="w-[60%] flex flex-col gap-6">
       <h2 class="text-2xl font-bold">Welcome, Odekunle Waris</h2>
       <h2 class="text-[15px] font-semibold my-2">Quick actions</h2>
-      <div class="flex items-center gap-10">
+      <div class="flex items-center justify-between">
         <button
-          class="w-[150px] flex gap-3 border border-[#800080] p-1 rounded font-semibold text-[#800080] cursor-pointer"
-          @click="handleIsTransfer"
+          class="flex gap-3 border border-[#800080] p-2 rounded font-semibold text-[#800080] cursor-pointer"
+          v-for="item in btnList"
+          :key="item.btnName"
+          @click="
+            item.btnName === 'Save Funds'
+              ? handleIsisSavings($event)
+              : item.btnName === 'Secure Loan'
+              ? handleIsLoan($event)
+              : item.btnName === 'Repay Loan'
+              ? handleIsRepayment($event)
+              : item.btnName === 'Transfer Funds'
+              ? handleIsTransferFund($event)
+              : null
+          "
         >
           <span>
-            <Send />
+            <component :is="item.btnIcon" />
           </span>
-          <span>Save Funds</span>
-        </button>
-        <button
-          class="w-[150px] flex gap-3 border border-[#800080] p-1 rounded font-semibold text-[#800080] cursor-pointer"
-          @click="handleIsLoan"
-        >
-          <span>
-            <Send />
-          </span>
-          <span>Secure Loan</span>
+          <span>{{ item.btnName }}</span>
         </button>
       </div>
       <div
@@ -37,7 +43,7 @@
             <h1
               class="text-4xl font-semibold my-3 text-[#800080] flex items-center"
             >
-              <NairaIcon /> <span> {{ totalSaving }} </span>
+              <span> {{ formattedTotalSaving }} </span>
             </h1>
           </div>
 
@@ -101,6 +107,7 @@
         </div>
       </div>
     </div>
+
     <div class="w-[36%] bg-gray-200 p-2 flex flex-col gap-5">
       <h2 class="text-[#800080] font-medium text-[16px]">Latest Transaction</h2>
       <form class="bg-white flex justify-between p-2">
@@ -144,8 +151,8 @@
   </div>
 
   <div
-    class="transfer absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
-    v-show="isTransfer"
+    class="savings absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    v-show="isSavings"
   >
     <div class="flex gap-40 font-bold my-10">
       <h1 class="text-[#800080] text-[20px]">Synergy</h1>
@@ -162,7 +169,7 @@
         <input
           type="text"
           class="w-full border border-[#800080] p-3 rounded outline-none"
-          v-model="savingFund.acctNumber"
+          v-model="savingFund.accountNumber"
         />
         <div>
           <span>Balance :</span> <span>{{ savingFund.savingsMoney }}</span>
@@ -176,6 +183,7 @@
           type="text"
           v-model="savingFund.accountName"
           class="w-full border border-[#800080] p-3 rounded outline-none"
+          disabled
         />
         <div>
           Account Name :<span> {{ savingFund.accountName }}</span>
@@ -221,11 +229,11 @@
         >
         <input
           type="text"
-          v-model="userLoan.acctNumber"
+          v-model="userLoan.accountNumber"
           class="w-full border border-[#800080] p-3 rounded outline-none"
         />
         <div>
-          <span>Balance :</span> <span>{{ savingFund.savingsMoney }}</span>
+          <span>Balance :</span> <span>{{ userLoan.amount }}</span>
         </div>
       </div>
       <div>
@@ -234,11 +242,12 @@
         >
         <input
           type="text"
-          v-model="userLoan.acctName"
+          v-model="userLoan.accountName"
           class="w-full border border-[#800080] p-3 rounded outline-none"
+          disabled
         />
         <div>
-          Account Name :<span>{{ userLoan.acctName }}</span>
+          Account Name :<span>{{ userLoan.accountName }}</span>
         </div>
       </div>
       <div>
@@ -263,8 +272,127 @@
     </form>
   </div>
   <div
+    class="transferFund absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    v-show="isTransferFund"
+  >
+    <div class="flex gap-40 font-bold my-10">
+      <h1 class="text-[#800080] text-[20px]">Synergy</h1>
+      <h2 class="text-xl text-center">Transfer</h2>
+    </div>
+    <form
+      class="flex flex-col gap-5"
+      @submit.prevent="handleTransferSubmission"
+    >
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Number</label
+        >
+        <input
+          type="text"
+          v-model="transferDetail.accountNumber"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          <span>Balance :</span>
+          <span>{{ transferDetail.transferAmount }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Name</label
+        >
+        <input
+          type="text"
+          v-model="transferDetail.accountName"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          Account Name :<span>{{ transferDetail.accountName }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Amount</label
+        >
+        <div class="flex items-center gap-1">
+          <span class="bg-gray-400 text-white p-3 rounded"><NairaIcon /></span>
+          <input
+            type="text"
+            v-model="transferDetail.transferAmount"
+            class="w-full border border-[#800080] p-3 rounded outline-none"
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+      >
+        Send Money
+      </button>
+    </form>
+  </div>
+  <div
+    class="repayment absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    v-show="isRepayment"
+  >
+    <div class="flex gap-40 font-bold my-10">
+      <h1 class="text-[#800080] text-[20px]">Synergy</h1>
+      <h2 class="text-xl text-center">Loan Repayment</h2>
+    </div>
+    <form
+      class="flex flex-col gap-5"
+      @submit.prevent="handleRepaymentSubmission"
+    >
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Number</label
+        >
+        <input
+          type="text"
+          v-model="repaymentDetail.accountNumber"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          <span>Balance :</span> <span>{{ repaymentDetail.amount }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Account Name</label
+        >
+        <input
+          type="text"
+          v-model="repaymentDetail.accountName"
+          class="w-full border border-[#800080] p-3 rounded outline-none"
+        />
+        <div>
+          Account Name :<span>{{ repaymentDetail.accountName }}</span>
+        </div>
+      </div>
+      <div>
+        <label for="account name" class="text-[14px] font-semibold"
+          >Amount</label
+        >
+        <div class="flex items-center gap-1">
+          <span class="bg-gray-400 text-white p-3 rounded"><NairaIcon /></span>
+          <input
+            type="text"
+            v-model="repaymentDetail.amount"
+            class="w-full border border-[#800080] p-3 rounded outline-none"
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+      >
+        Pay Loan
+      </button>
+    </form>
+  </div>
+  <div
     class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-    v-show="isTransfer || isLoan"
+    v-show="isSavings || isLoan || isRepayment || isTransferFund"
   ></div>
 </template>
 
@@ -282,29 +410,76 @@ import {
 } from "lucide-vue-next";
 import NairaIcon from "../components/icons/NairaIcon.vue";
 import { onMounted } from "vue";
-import { onBeforeUnmount } from "vue";
+import { onBeforeUnmount, ref } from "vue";
 const fundsDetail = useTransaction();
-const { isTransfer, isLoan, totalSaving, savingFund, userLoan } =
-  storeToRefs(fundsDetail);
+const {
+  isSavings,
+  isLoan,
+  formattedTotalSaving,
+  savingFund,
+  userLoan,
+  isRepayment,
+  isTransferFund,
+  repaymentDetail,
+  transferDetail,
+} = storeToRefs(fundsDetail);
 
-const { handleIsTransfer, handleIsLoan } = fundsDetail;
+const {
+  handleIsisSavings,
+  handleIsLoan,
+  handleIsRepayment,
+  handleIsTransferFund,
+  handleRepaymentSubmission,
+  handleTransferSubmission,
+} = fundsDetail;
+
+const btnList = ref([
+  {
+    btnName: "Save Funds",
+    btnIcon: Send,
+  },
+  {
+    btnName: "Secure Loan",
+    btnIcon: Send,
+  },
+  {
+    btnName: "Repay Loan",
+    btnIcon: Send,
+  },
+  {
+    btnName: "Transfer Funds",
+    btnIcon: Send,
+  },
+]);
 
 onMounted(() => {
-  const transfer = document.querySelector(".transfer");
+  const savings = document.querySelector(".savings");
   const loan = document.querySelector(".loan");
+  const repayment = document.querySelector(".repayment");
+  const transferFund = document.querySelector(".transferFund");
 
-  console.log(transfer);
+  console.log(repayment);
   const handleDocumentClick = (e) => {
     const target = e.target;
 
     if (!(target instanceof Node)) return;
 
-    if (isTransfer.value && transfer && !transfer.contains(target)) {
-      isTransfer.value = false;
+    if (isSavings.value && savings && !savings.contains(target)) {
+      isSavings.value = false;
     }
 
     if (isLoan.value && loan && !loan.contains(target)) {
       isLoan.value = false;
+    }
+    if (isRepayment.value && repayment && !repayment.contains(target)) {
+      isRepayment.value = false;
+    }
+    if (
+      isTransferFund.value &&
+      transferFund &&
+      !transferFund.contains(target)
+    ) {
+      isTransferFund.value = false;
     }
   };
 
