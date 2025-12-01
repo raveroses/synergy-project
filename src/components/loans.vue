@@ -37,19 +37,30 @@
       </p>
     </div>
 
-    <div class="w-[399px] h-[255px] rounded-[5.8px] p-5 mt-5 bg-[#FFFFFF]">
-      <div class="flex justify-between">
+    <div
+      class="container w-[399px] h-[255px] rounded-[5.8px] mt-5 bg-[#FFFFFF]"
+    >
+      <div class="heading flex justify-between">
         <h2
           class="font-bold text-[19.32px] leading-[28.98px] tracking-0 text-[#101828] space-y-[19.32px]"
         >
           Saved Beneficiaries
         </h2>
-        <div>See All</div>
+        <div
+          @click="handleAllDisplay"
+          class="text-[15px] font-bold cursor-pointer"
+        >
+          See All
+        </div>
       </div>
 
-      <div class="beneficiaries">
+      <div
+        class="beneficiaries px-5"
+        v-for="eachHistory in beneficiariesDisplay"
+      >
         <div
           class="flex items-center gap-5 border-[0.95px] border-[#EAECF0] rounded-[7px] p-2 mt-2.5"
+          v-if="'transferAmount' in eachHistory"
         >
           <Img
             src="/images/bene.jpg"
@@ -59,7 +70,7 @@
           <h2
             class="font-semibold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
           >
-            Kathlyn man
+            {{ eachHistory.accountName }}
           </h2>
         </div>
       </div>
@@ -77,9 +88,15 @@ import { computed } from "vue";
 const route = useRoute();
 import { useTransaction } from "./useTransaction";
 import { storeToRefs } from "pinia";
+import { ref } from "vue";
 const fundDetails = useTransaction();
-const { loanDetail, acctDetail, formattedTotalLoan, formattedTotalSaving } =
-  storeToRefs(fundDetails);
+const {
+  loanDetail,
+  acctDetail,
+  formattedTotalLoan,
+  formattedTotalSaving,
+  transactionHistory,
+} = storeToRefs(fundDetails);
 
 const currentValue = computed(() => {
   if (!props.loanPageProps) {
@@ -108,4 +125,21 @@ const currentValue = computed(() => {
 
   // return { name: "", amount: "", caption: "" };
 });
+
+let displayLimit = ref(3);
+
+const lengthOfBeneficiaries = computed(() => {
+  return transactionHistory.value.filter((item) => "transferAmount" in item)
+    .length;
+});
+const beneficiariesDisplay = computed(() => {
+  return transactionHistory.value
+    .filter((item) => "transferAmount" in item)
+    .slice(0, displayLimit.value);
+});
+
+const handleAllDisplay = () => {
+  displayLimit.value = lengthOfBeneficiaries.value;
+};
+
 </script>

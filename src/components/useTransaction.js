@@ -83,8 +83,6 @@ export const useTransaction = defineStore("detail", () => {
           )
         : 0;
 
-    console.log("totalBorrowed", totalBorrowed);
-    console.log("totalRepaid", totalRepaid);
     return totalBorrowed - totalRepaid;
   });
 
@@ -417,13 +415,83 @@ export const useTransaction = defineStore("detail", () => {
     }
   };
 
-  console.log(transferDetail.value);
   const allHistory = computed(() => [
     ...repaymentHistory.value,
     ...transactionHistory.value,
   ]);
-  console.log(totalSaving.value);
 
+  let categoryValue = ref("");
+
+  let isCategory = computed({
+    get: () => categoryValue.value,
+    set: (val) => (categoryValue.value = val),
+  });
+
+  const handleCategory = (category) => {
+    isCategory.value = category.toLowerCase();
+    console.log("category updated to:", isCategory.value);
+  };
+  const formatNaira = (amount) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+  const billPayment = ref({
+    category: " ",
+    date: null,
+    plans: {},
+  });
+
+  const billHistory = ref(JSON.parse(localStorage.getItem("plan")) || []);
+
+  const handlePlan = (eachPlan) => {
+    if (!billPayment.value) {
+      toast.error("Please,Select your plan");
+      console.log("Please,Select your plan");
+      return;
+    }
+
+    if (isCategory.value && eachPlan) {
+      billPayment.value = {
+        category: isCategory.value,
+        date: new Date().toISOString(),
+        plans: eachPlan,
+      };
+      console.log("EachPlan", eachPlan);
+    }
+    billHistory.value.push(billPayment.value);
+    localStorage.setItem("plan", JSON.stringify(billHistory.value));
+  };
+
+  console.log(billPayment.value);
+  console.log("ARRAY", billHistory.value);
+
+  const searchValue = ref("");
+  const searchingResult = ref([]);
+  const handleSearch = () => {
+    if (!searchValue.value) {
+      toast.error("Please, enter your input");
+      return;
+    }
+
+    searchingResult.value = [];
+
+    if (billHistory.value.length > 0) {
+      const searchFilter = billHistory.value.filter(
+        (plan) =>
+          plan.id === searchValue.value ||
+          plan.category === searchValue.value ||
+          plan.price === searchValue.value
+      );
+
+      searchingResult.value = searchFilter;
+    }
+  };
+
+  console.log(searchingResult);
   return {
     isSavings,
     isLoan,
@@ -444,5 +512,15 @@ export const useTransaction = defineStore("detail", () => {
     allHistory,
     transferDetail,
     handleTransferSubmission,
+    transactionHistory,
+    repaymentHistory,
+    handleCategory,
+    isCategory,
+    formatNaira,
+    handlePlan,
+    billHistory,
+    searchValue,
+    searchingResult,
+    handleSearch,
   };
 });
