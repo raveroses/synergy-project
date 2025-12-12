@@ -93,16 +93,18 @@
       <h1 class="text-2xl font-semibold">Invoice</h1>
 
       <table class="my-10">
-        <tr>
-          <th>Invoice</th>
-          <th>Amount</th>
-          <th>Category</th>
-          <th>Billing Date</th>
-          <th>Status</th>
-        </tr>
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Billing Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
 
         <tbody v-if="searchingResult.length > 0">
-          <tr v-for="plan in searchingResult">
+          <tr v-for="plan in searchingResult" :key="plan.plans.id">
             <td>{{ plan.plans.id }}</td>
             <td>{{ plan.plans.price }}</td>
             <td>{{ plan.category }}</td>
@@ -110,8 +112,9 @@
             <td>paid</td>
           </tr>
         </tbody>
+
         <tbody v-else>
-          <tr v-for="plan in billHistory">
+          <tr v-for="plan in billHistory" :key="plan.plans.id">
             <td>{{ plan.plans.id }}</td>
             <td>{{ plan.plans.price }}</td>
             <td>{{ plan.category }}</td>
@@ -120,6 +123,10 @@
           </tr>
         </tbody>
       </table>
+
+      <div v-if="isLoading">
+        <Spinner />
+      </div>
     </div>
   </div>
 </template>
@@ -129,8 +136,9 @@ import { Droplets, Flame, Search, Zap } from "lucide-vue-next";
 import { ref } from "vue";
 import { useTransaction } from "../../useTransaction";
 import { storeToRefs } from "pinia";
+import Spinner from "@/components/ui/spinner/Spinner.vue";
 const fundDetails = useTransaction();
-const { isCategory, billHistory, searchValue, searchingResult } =
+const { isCategory, billHistory, searchValue, searchingResult, isLoading } =
   storeToRefs(fundDetails);
 const { handleCategory, formatNaira, handlePlan, handleSearch } = fundDetails;
 

@@ -1,10 +1,11 @@
 <template>
-  <div class="flex relative">
+  <div class="flex gap-5">
     <Sidebar
       v-if="!route.path.includes('signup') && !route.path.includes('login')"
     />
 
-    <div class="flex-1">
+    <!-- flex-1 -->
+    <div class="w-full">
       <slot name="header">
         <Header
           v-if="!route.path.includes('signup') && !route.path.includes('login')"
@@ -20,9 +21,10 @@
         class="p-[50px]"
       >
         <slot name="data">
-          <div class="flex justify-between">
+          <div class="flex justify-between items-center w-full">
             <loans />
-            <FirstSection />
+
+            <Insight />
           </div>
           <div class="my-5">
             <Transaction />
@@ -39,7 +41,8 @@
 <script setup>
 import Sidebar from "./sidebar/Sidebar.vue";
 import Header from "./header/Header.vue";
-import FirstSection from "./firstSection/components/FirstSection.vue";
+// import FirstSection from "./firstSection/components/FirstSection.vue";
+import Insight from "./insight.vue";
 import Transaction from "./Transaction.vue";
 import loans from "./loans.vue";
 import { ref, watchEffect } from "vue";

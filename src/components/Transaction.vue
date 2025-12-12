@@ -23,7 +23,7 @@
         <tbody class="w-full h-[100px]">
           <tr class="text-center" v-for="history in displayLimitHistory">
             <td class="flex items-center justify-start gap-5">
-              <Img
+              <img
                 src="/images/bene.jpg"
                 alt="images-of-beneficiaries"
                 class="w-[38.64px] h-[38.64px] rounded-[193.19px]"

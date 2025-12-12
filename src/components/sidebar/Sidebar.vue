@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[290px] h-[1011px] bg-[#2E052E] p-[30px]">
+  <div class="w-[290px] h-[1150px] bg-[#2E052E] p-[30px]">
     <h2
       class="text-white text-[32px] font-bold tracking-0 leading-[23.18px] text-center"
     >

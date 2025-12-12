@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div class="flex justify-between">
+    <div class="w-full flex justify-between items-center">
       <div
         v-for="(item, index) in cardComponent"
-        class="bg-[#FFFF] w-[230px] flex flex-col gap-5 p-5"
+        class="bg-[#FFFF] w-[380px] flex flex-col gap-5 p-5"
         :key="index"
       >
         <div class="flex justify-between">

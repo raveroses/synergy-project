@@ -1,8 +1,7 @@
 <template>
-  <header class="w-[1101px] h-[97px] bg-[#FFFFFF]">
-    <div
-      class="w-[1050.04px] h-[46.37px] absolute top-[25.12px] left-[320.7px] flex justify-between"
-    >
+  <header class="bg-[#FFFFFF]">
+    <!-- absolute top-[25.12px] left-[320.7px] -->
+    <div class="w-full flex justify-between">
       <div class="flex items-center gap-5">
         <h1 class="font-bold text-[23.18px] leading-[30.91px] text-[#101828]">
           Good Morning
@@ -63,5 +62,5 @@
 </template>
 
 <script setup>
-import sunsetSvg from "../../../public/sunsetSvg.vue";
+import sunsetSvg from "../sunsetSvg.vue";
 </script>

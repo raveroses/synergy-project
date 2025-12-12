@@ -1,9 +1,9 @@
 <template>
-  <div class="flex justify-between">
-    <div class="w-[500px] bg-gray-200 rounded p-10">
+  <div class="w-full flex justify-between">
+    <div class="bg-gray-200 rounded p-10 w-[45%] h-[400px] flex justify-center">
       <Pie :data="chartData.pie" :options="chartOptions.pie" />
     </div>
-    <div class="w-[400px] bg-gray-200 rounded p-10">
+    <div class="bg-gray-200 rounded p-10 w-[45%] h-[400px] flex justify-center">
       <Doughnut :data="chartData.doughnut" :options="chartOptions.doughnut" />
     </div>
   </div>

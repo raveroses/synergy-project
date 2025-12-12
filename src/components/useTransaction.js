@@ -75,6 +75,13 @@ export const useTransaction = defineStore("detail", () => {
       return acc;
     }, 0);
 
+    // const totalTransfer = transactionHistory.value.reduce((accum, currVal) => {
+    //   if ("transferAmount" in currVal) {
+    //     return accum + Number(currVal.transferAmount);
+    //   }
+    //   return accum;
+    // }, 0);
+
     const totalRepaid =
       repaymentHistory.value.length > 0
         ? repaymentHistory.value.reduce(
@@ -83,8 +90,14 @@ export const useTransaction = defineStore("detail", () => {
           )
         : 0;
 
+    if (totalBorrowed - totalRepaid < 0) {
+      toast.error("You have no outstanding debt to pay");
+      return 0;
+    }
     return totalBorrowed - totalRepaid;
   });
+
+  //  totalBorrowed - totalRepaid;
 
   const formattedTotalLoan = computed(() => {
     return new Intl.NumberFormat("en-NG", {
@@ -239,7 +252,7 @@ export const useTransaction = defineStore("detail", () => {
       try {
         if (!this.handleValidation()) return;
         loanDetail.value = {
-          // accountName: this.accountName,
+          accountName: "odekunle waris",
           accountNumber: this.accountNumber,
           loanAmount: this.loanAmount,
           date: new Date().toISOString(),
@@ -255,7 +268,6 @@ export const useTransaction = defineStore("detail", () => {
         );
         localStorage.setItem("loanDetail", JSON.stringify(loanDetail.value));
 
-        console.log("Saved:", JSON.parse(JSON.stringify(loanDetail.value)));
         // this.accountName = "";
         this.accountNumber = " ";
         this.loanAmount = " ";
@@ -348,13 +360,11 @@ export const useTransaction = defineStore("detail", () => {
       !transferDetail.value.transferAmount
     ) {
       toast.error("Please, Input valid Amount");
-      console.log("Please, Input valid Amount");
       return;
     }
 
     if (!transferDetail.value.accountName) {
       toast.error("Please, Input valid Account Name");
-      console.log("Please, Input valid Account Name");
       return;
     }
 
@@ -363,13 +373,11 @@ export const useTransaction = defineStore("detail", () => {
       !transferDetail.value.accountNumber
     ) {
       toast.error("Please, Input valid Number");
-      console.log("Please, Input valid Number");
       return;
     }
 
     if (transferDetail.value.accountNumber.trim().length !== 10) {
       toast.error("Invalid Account Number");
-      console.log("Invalid Account Number");
       return;
     }
     return true;
@@ -415,6 +423,7 @@ export const useTransaction = defineStore("detail", () => {
     }
   };
 
+  const isLoading = ref(false);
   const allHistory = computed(() => [
     ...repaymentHistory.value,
     ...transactionHistory.value,
@@ -429,7 +438,6 @@ export const useTransaction = defineStore("detail", () => {
 
   const handleCategory = (category) => {
     isCategory.value = category.toLowerCase();
-    console.log("category updated to:", isCategory.value);
   };
   const formatNaira = (amount) => {
     return new Intl.NumberFormat("en-NG", {
@@ -450,7 +458,6 @@ export const useTransaction = defineStore("detail", () => {
   const handlePlan = (eachPlan) => {
     if (!billPayment.value) {
       toast.error("Please,Select your plan");
-      console.log("Please,Select your plan");
       return;
     }
 
@@ -460,34 +467,36 @@ export const useTransaction = defineStore("detail", () => {
         date: new Date().toISOString(),
         plans: eachPlan,
       };
-      console.log("EachPlan", eachPlan);
     }
     billHistory.value.push(billPayment.value);
     localStorage.setItem("plan", JSON.stringify(billHistory.value));
   };
 
-  console.log(billPayment.value);
-  console.log("ARRAY", billHistory.value);
-
   const searchValue = ref("");
   const searchingResult = ref([]);
   const handleSearch = () => {
-    if (!searchValue.value) {
-      toast.error("Please, enter your input");
-      return;
-    }
+    isLoading.value = true;
+    try {
+      if (!searchValue.value) {
+        toast.error("Please, enter your input");
+        return;
+      }
 
-    searchingResult.value = [];
+      searchingResult.value = [];
 
-    if (billHistory.value.length > 0) {
-      const searchFilter = billHistory.value.filter(
-        (plan) =>
-          plan.id === searchValue.value ||
-          plan.category === searchValue.value ||
-          plan.price === searchValue.value
-      );
+      if (billHistory.value.length > 0) {
+        const searchFilter = billHistory.value.filter(
+          (plan) =>
+            plan.id === searchValue.value ||
+            plan.category === searchValue.value ||
+            Number(plan.price) === Number(searchValue.value)
+        );
 
-      searchingResult.value = searchFilter;
+        searchingResult.value = searchFilter;
+      }
+    } catch (error) {
+      console.log(error.message);
+    } finally {
     }
   };
 
@@ -522,5 +531,6 @@ export const useTransaction = defineStore("detail", () => {
     searchValue,
     searchingResult,
     handleSearch,
+    isLoading,
   };
 });

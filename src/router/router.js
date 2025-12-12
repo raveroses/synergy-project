@@ -1,4 +1,3 @@
-<script>
 import { createRouter, createWebHistory } from "vue-router";
 import Setting from "../view/Setting.vue";
 import Investment from "../view/Investment.vue";
@@ -23,4 +22,3 @@ const router = createRouter({
 });
 
 export default router;
-</script>

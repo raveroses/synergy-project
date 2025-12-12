@@ -3,7 +3,9 @@ import "./style.css";
 import App from "./view/App.vue";
 import ToastPlugin from "vue-toast-notification";
 import "vue-toast-notification/dist/theme-default.css";
-import router from "./router/router.vue";
+import { LoadingPlugin } from "vue-loading-overlay";
+import "vue-loading-overlay/dist/css/index.css";
+import router from "./router/router.js";
 import { createPinia } from "pinia";
 
 const app = createApp(App);
@@ -15,4 +17,5 @@ app.use(ToastPlugin, {
   position: "top-right",
   duration: 3000,
 });
+app.use(LoadingPlugin);
 app.mount("#app");

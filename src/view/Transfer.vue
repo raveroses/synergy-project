@@ -15,12 +15,12 @@
             item.btnName === 'Save Funds'
               ? handleIsisSavings($event)
               : item.btnName === 'Secure Loan'
-              ? handleIsLoan($event)
-              : item.btnName === 'Repay Loan'
-              ? handleIsRepayment($event)
-              : item.btnName === 'Transfer Funds'
-              ? handleIsTransferFund($event)
-              : null
+                ? handleIsLoan($event)
+                : item.btnName === 'Repay Loan'
+                  ? handleIsRepayment($event)
+                  : item.btnName === 'Transfer Funds'
+                    ? handleIsTransferFund($event)
+                    : null
           "
         >
           <span>
@@ -118,23 +118,53 @@
         />
         <button><Search /></button>
       </form>
-      <div class="flex flex-col">
-        <div class="user flex items-center justify-between">
-          <div class="username-image flex items-center gap-1">
-            <div class="">
-              <img
-                src="/images/bene.jpg"
-                alt="user-image"
-                class="rounded-full w-12"
-              />
-            </div>
-            <h2 class="text-[18px] font-semibold text-[#800080]">
-              Odekunle Waris
-            </h2>
-          </div>
-          <div class="time font-semibold text-[#800080]">18/11/2025</div>
-          <div class="font-semibold text-[#800080]">$9000</div>
-        </div>
+
+      <div class="table-container p-2">
+        <table class="w-full">
+          <tbody class="w-full h-[100px] flex flex-col gap-2.5">
+            <tr
+              class="flex items-center justify-between"
+              v-for="history in allHistory"
+            >
+              <td
+                class="flex items-center justify-start gap-5"
+                data-table="table-detail"
+              >
+                <Img
+                  src="/images/bene.jpg"
+                  alt="images-of-beneficiaries"
+                  class="w-[38.64px] h-[38.64px] rounded-[193.19px]"
+                />
+
+                <h2
+                  class="font-bold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
+                >
+                  {{ history.accountName }}
+                </h2>
+              </td>
+
+              <td data-table="table-detail">
+                <h2
+                  class="font-bold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
+                >
+                  {{ history.date.split("T")[0].toString() }}
+                </h2>
+              </td>
+              <td data-table="table-detail">
+                <h2
+                  class="font-bold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
+                >
+                  {{
+                    history.amount ||
+                    history.transferAmount ||
+                    history.loanAmount ||
+                    history.savingsMoney
+                  }}
+                </h2>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div>
         <p class="text-[18px] text-[#800080] font-semibold">
@@ -422,6 +452,7 @@ const {
   isTransferFund,
   repaymentDetail,
   transferDetail,
+  allHistory,
 } = storeToRefs(fundsDetail);
 
 const {
@@ -489,4 +520,6 @@ onMounted(() => {
     window.removeEventListener("click", handleDocumentClick);
   });
 });
+
+console.log("all", allHistory.value);
 </script>

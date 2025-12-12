@@ -1,14 +1,11 @@
 <template>
-  <div class="w-[405.08px] h-[478px]">
-    <div
-      class="loan w-[397.61px] h-[184.98px] rounded-[5.8px] p-5 bg-[#FFFFFF]"
-      v-if="currentValue"
-    >
+  <div class="w-[40%] flex-col">
+    <div class="loan rounded-[5.8px] p-5 bg-[#FFFFFF]" v-if="currentValue">
       <div class="flex justify-between">
         <h2 class="text-[20px] font-medium">
           {{
             route.path.includes("loan")
-              ? loanDetail.acctName
+              ? loanDetail.accountName
               : acctDetail.accountName
           }}
         </h2>
@@ -37,9 +34,7 @@
       </p>
     </div>
 
-    <div
-      class="container w-[399px] h-[255px] rounded-[5.8px] mt-5 bg-[#FFFFFF]"
-    >
+    <div class="container rounded-[5.8px] mt-5 bg-[#FFFFFF]">
       <div class="heading flex justify-between">
         <h2
           class="font-bold text-[19.32px] leading-[28.98px] tracking-0 text-[#101828] space-y-[19.32px]"
@@ -62,7 +57,7 @@
           class="flex items-center gap-5 border-[0.95px] border-[#EAECF0] rounded-[7px] p-2 mt-2.5"
           v-if="'transferAmount' in eachHistory"
         >
-          <Img
+          <img
             src="/images/bene.jpg"
             alt="images-of-beneficiaries"
             class="w-[38.64px] h-[38.64px] rounded-[193.19px]"
@@ -141,5 +136,4 @@ const beneficiariesDisplay = computed(() => {
 const handleAllDisplay = () => {
   displayLimit.value = lengthOfBeneficiaries.value;
 };
-
 </script>
