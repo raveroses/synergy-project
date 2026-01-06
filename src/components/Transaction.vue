@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-[#FFFFFF] p-5">
+  <div class="bg-[#FFFFFF] md:p-5 p-2">
     <h2
       class="font-bold text-[19.32px] leading-[28.98px] tracking-0 text-[#101828] space-y-[19.32px] my-10"
     >

@@ -1,6 +1,8 @@
 <template>
   <div>
-    <div class="w-full flex justify-between items-center">
+    <div
+      class="w-full flex md:flex-row flex-col justify-between md:items-center gap-3"
+    >
       <div
         v-for="(item, index) in cardComponent"
         class="bg-[#FFFF] w-[380px] flex flex-col gap-5 p-5"

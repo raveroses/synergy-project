@@ -13,6 +13,29 @@ export const useCreateClient = defineStore("createClient", () => {
   const signUpLoading = ref(false);
   const $loading = useLoading();
   const toast = useToast();
+  const signUpUserError = ref({});
+
+  const signUpUser = ref({
+    userName: "",
+    email: "",
+    password: "",
+  });
+
+  // const getUserSession = async () => {
+  //   try {
+  //     const { data, error } = await supabase.auth.getSession();
+  //     const isUser = data.session;
+
+  //     if (!isUser) {
+  //       return false;
+  //     }
+
+  //     return true;
+  //   } catch (e) {
+  //     console.log(e.message);
+  //     return false;
+  //   }
+  // };
 
   const handleOnTimeSignIn = async () => {
     loading.value = true;
@@ -42,24 +65,17 @@ export const useCreateClient = defineStore("createClient", () => {
       loader.hide();
       loading.value = false;
       return { data: null, error };
+    } finally {
+      loader.hide();
+      loading.value = false;
     }
   };
-
-  const signUpUserError = ref({});
-
-  const signUpUser = ref({
-    userName: "",
-    email: "",
-    password: "",
-  });
-
-  let isAccountCreationValid = ref(false);
 
   const handleAccountCreationValidation = () => {
     const userName = signUpUser.value.userName;
     const email = signUpUser.value.email;
     const password = signUpUser.value.password;
-    let valid = false;
+    let valid = true;
 
     signUpUserError.value = {
       userNameError: "",
@@ -67,11 +83,6 @@ export const useCreateClient = defineStore("createClient", () => {
       passwordError: "",
     };
 
-    const signUpUserError = ref({
-      userNameError: "",
-      emailError: "",
-      passwordError: "",
-    });
     if (!userName) {
       signUpUserError.value.userNameError = "Invalid Username";
       valid = false;
@@ -81,16 +92,14 @@ export const useCreateClient = defineStore("createClient", () => {
       valid = false;
     }
     if (!password) {
-      signUpUserError.value.userNameError = "Invalid password";
+      signUpUserError.value.passwordError = "Invalid password";
       valid = false;
     }
-
-    isAccountCreationValid.value = valid;
 
     return valid;
   };
 
-  const handleAccountCreation = async () => {
+  const handleAccountCreation = async (router) => {
     signUpLoading.value = true;
     const loader = $loading.show({
       color: "#800080",
@@ -98,37 +107,201 @@ export const useCreateClient = defineStore("createClient", () => {
     });
 
     try {
-      if (isAccountCreationValid.value) {
-        const { data, error } = await supabase.auth.signUp({
-          email: signUpUser.value.email,
-          password: signUpUser.value.password,
-          options: {
-            emailRedirectTo: "http://localhost:5173/login",
-            data: {
-              userName: signUpUser.value.userName,
-            },
-          },
-        });
-
-        console.log(error);
-
-        if (error) {
-          toast.error(error.message);
-          loader.hide();
-          signUpLoading.value = false;
-          return { data: null, error };
-        }
-
-        return { data, error: null };
+      if (!handleAccountCreationValidation()) {
+        return;
       }
+
+      const { data, error } = await supabase.value.auth.signUp({
+        email: signUpUser.value.email,
+        password: signUpUser.value.password,
+
+        options: {
+          data: {
+            userName: signUpUser.value.userName,
+          },
+        },
+      });
+
+      if (error) {
+        toast.error(error.message);
+        loader.hide();
+        signUpLoading.value = false;
+        return { data: null, error };
+      }
+
+      router.push("/login");
+      return { data, error: null };
     } catch (error) {
       toast.error(error.message || "An error occurred during sign in");
       loader.hide();
       loading.value = false;
       return { data: null, error };
+    } finally {
+      loader.hide();
+      signUpLoading.value = false;
     }
   };
-  console.log("error", signUpUserError.value);
+
+  const signIn = ref({
+    email: "",
+    password: "",
+  });
+
+  let signInError = ref({
+    emailError: "",
+    passwordError: "",
+  });
+
+  let signInLoading = ref(false);
+  const handleSignInValidation = () => {
+    const signInEmail = signIn.value.email;
+    const signInPassword = signIn.value.password;
+
+    signInError.value = {
+      emailError: "",
+      passwordError: "",
+    };
+
+    if (!signInEmail) {
+      signInError.value.emailError = "Invalid Email ";
+      return false;
+    }
+
+    if (!signInPassword) {
+      signInPassword.value.passwordError = "Invalid Password";
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSignIn = async (router) => {
+    signInLoading.value = true;
+    const loader = $loading.show({
+      color: "#800080",
+      backgroundColor: "#ffffff",
+    });
+
+    try {
+      if (!handleSignInValidation()) {
+        return;
+      }
+
+      const { data, error } = await supabase.value.auth.signInWithPassword({
+        email: signIn.value.email,
+        password: signIn.value.password,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        loader.hide();
+        signInLoading.value = false;
+        return { data: null, error };
+      }
+
+      router.push("/");
+      return { data, error: null };
+    } catch (error) {
+      toast.error(error.message || "An error occurred during sign in");
+      loader.hide();
+      signInLoading.value = false;
+      return { data: null, error };
+    } finally {
+      loader.hide();
+      signInLoading.value = false;
+    }
+  };
+
+  const resetPasswordDetail = ref({
+    resetEmail: " ",
+  });
+  const handleEmailResetValidation = () => {
+    const email = resetPasswordDetail.value.resetEmail;
+
+    if (!email) {
+      toast.error("Invalid email");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleEmailSender = async () => {
+    if (!handleEmailResetValidation()) {
+      return;
+    }
+
+    const { data, error } = await supabase.value.auth.resetPasswordForEmail(
+      resetPasswordDetail.value.resetEmail,
+      {
+        redirectTo: "http://localhost:5173/updatePassword",
+      }
+    );
+
+    toast.success("Please, check your mail");
+  };
+
+  const changePassword = ref({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const handleResetPasswordValidation = () => {
+    const newPassword = changePassword.value.newPassword;
+    const confirmPassword = changePassword.value.confirmPassword;
+    if (!newPassword) {
+      toast.error("Invalid Create Password");
+      return false;
+    }
+
+    if (!confirmPassword) {
+      toast.error("Invalid confirm Password");
+      return false;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error(" Password not match");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handlePasswordUpdated = async (router) => {
+    try {
+      if (!handleResetPasswordValidation()) {
+        return;
+      }
+
+      const { data, error } = await supabase.value.auth.updateUser({
+        password: changePassword.value.confirmPassword,
+      });
+
+      console.log(error);
+      console.log(data);
+
+      if (error) {
+        toast.error(`Error updating password: ${error.message}`);
+        return;
+      }
+
+      router.push("/");
+      toast.success("Password updated successfully");
+    } catch (e) {
+      console.error(e);
+      throw new Error(e.message);
+    }
+  };
+
+  const isNewPasswordVisible = ref(false);
+  const isConfirmPasswordVisible = ref(false);
+
+  const handleIsNewPasswordVisible = () => {
+    isNewPasswordVisible.value = !isNewPasswordVisible.value;
+  };
+  const handleIsConfirmPasswordVisible = () => {
+    isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
+  };
+
   return {
     supabase,
     handleOnTimeSignIn,
@@ -136,5 +309,18 @@ export const useCreateClient = defineStore("createClient", () => {
     handleAccountCreation,
     signUpLoading,
     signUpUserError,
+    signUpUser,
+    signIn,
+    signInLoading,
+    signInError,
+    handleSignIn,
+    resetPasswordDetail,
+    handleEmailSender,
+    changePassword,
+    handlePasswordUpdated,
+    isNewPasswordVisible,
+    isConfirmPasswordVisible,
+    handleIsNewPasswordVisible,
+    handleIsConfirmPasswordVisible,
   };
 });

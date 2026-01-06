@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2 class="text-2xl font-bold text-[#800080]">SYNERGY</h2>
-    <h2 class="w-full text-[35px] font-semibold my-10">
+    <h2 class="md:text-2xl text-xl font-bold text-[#800080]">SYNERGY</h2>
+    <h2 class="w-full md:text-[35px] text-[25px] font-semibold my-10">
       Keep your online business organized
     </h2>
 
@@ -11,7 +11,7 @@
     >
       <img src="/images/google.png" alt="google-image" class="w-[30px]" />
       <span class="font-semibold">
-        {{ loading ? "Redirecting to Google..." : "Sign in with Google" }}
+        {{ loading ? "Redirecting to Google..." : "Continue with Google" }}
       </span>
     </button>
 
@@ -21,7 +21,7 @@
       <div class="w-[230px] h-0.5 bg-gray-400"></div>
     </div>
 
-    <form class="flex flex-col gap-10" @submit.prevent="handleAccountCreation">
+    <form class="flex flex-col gap-10" @submit.prevent="submit">
       <div class="name">
         <div class="flex justify-between mb-1">
           <label for="firstname">First Name</label>
@@ -29,6 +29,8 @@
         </div>
         <input
           type="text"
+          v-model="signUpUser.userName"
+          required
           class="w-full border border-[#800080] p-3 rounded outline-none"
         />
       </div>
@@ -39,6 +41,8 @@
         </div>
         <input
           type="email"
+          v-model="signUpUser.email"
+          required
           class="w-full border border-[#800080] p-3 rounded outline-none"
         />
       </div>
@@ -49,6 +53,8 @@
         </div>
         <input
           type="password"
+          v-model="signUpUser.password"
+          required
           class="w-full border border-[#800080] p-3 rounded outline-none"
         />
       </div>
@@ -58,15 +64,16 @@
         class="bg-[#800080] text-white w-full p-3 text-[15px] font-semibold rounded"
       >
         {{ signUpLoading ? " Redirecting ..." : " Create account" }}
-        Create account
       </button>
     </form>
-    <p class="text-center text-[#800080] pt-2">
-      Don't have an acoount , Login here
-    </p>
+    <router-link to="/login">
+      <p class="text-center text-[#800080] pt-2">
+        Already have account , Login here
+      </p>
+    </router-link>
   </div>
 
-  <div>
+  <div class="md:block hidden">
     <img
       src="/images/chart.jpeg"
       alt="chart-images"
@@ -76,12 +83,19 @@
 </template>
 
 <script setup>
-// import { inject } from "vue";
 import { useCreateClient } from "@/_supabase/useCreateClient";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 
 const store = useCreateClient();
-const { loading, signUpLoading, signUpUserError } = storeToRefs(store);
+const { loading, signUpLoading, signUpUserError, signUpUser } =
+  storeToRefs(store);
 
 const { handleOnTimeSignIn, handleAccountCreation } = store;
+
+const router = useRouter();
+
+const submit = async () => {
+  await handleAccountCreation(router);
+};
 </script>

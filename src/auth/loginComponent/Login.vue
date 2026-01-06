@@ -1,54 +1,69 @@
 <template>
   <div>
-    <h2 class="text-2xl font-bold text-[#800080]">SYNERGY</h2>
-    <h2 class="w-full text-[35px] font-semibold my-10">
+    <h2 class="md:text-2xl text-xl font-bold text-[#800080]">SYNERGY</h2>
+    <h2 class="w-full md:text-[35px] text-[25px] font-semibold my-10">
       Keep your online business organized
     </h2>
 
     <button
-      class="flex items-center gap-5 border border-[#800080] p-2 w-full justify-center rounded"
+      class="flex items-center gap-5 border border-[#800080] p-2 w-full justify-center rounded cursor-pointer"
+      @click="handleOnTimeSignIn"
     >
       <img src="/images/google.png" alt="google-image" class="w-[30px]" />
-      <span class="font-semibold"> Sign in with Google </span>
+      <span class="font-semibold"> {{ loading ? "Redirecting to Google " : "Continue with Google " }}</span>
     </button>
 
-    <div class="flex items-center justify-start gap-2 my-3">
+    <div class="flex items-center justify-center gap-2 my-3">
       <div class="w-[230px] h-0.5 bg-gray-400"></div>
       <div class="text-md font-bold">Or</div>
       <div class="w-[230px] h-0.5 bg-gray-400"></div>
     </div>
 
-    <form class="flex flex-col gap-10">
+    <form class="flex flex-col gap-10" @submit.prevent="handleSubmission">
       <div class="name">
         <div class="flex justify-between mb-1">
           <label for="email">Email</label>
-          <div>Error</div>
+          <div>{{ signInError.emailError }}</div>
         </div>
         <input
           type="email"
+          v-model="signIn.email"
           class="w-full border border-[#800080] p-3 rounded outline-none"
+          required
         />
       </div>
       <div class="name">
         <div class="flex justify-between mb-1">
           <label for="password">Password</label>
-          <div>Error</div>
+          <div>{{ signInError.passwordError }}</div>
         </div>
         <input
           type="password"
           class="w-full border border-[#800080] p-3 rounded outline-none"
+          v-model="signIn.password"
+          required
         />
       </div>
 
       <button
-        class="bg-[#800080] text-white w-full p-3 text-[15px] font-semibold rounded"
+        class="bg-[#800080] text-white w-full p-3 text-[15px] font-semibold rounded cursor-pointer"
+        type="submit"
       >
-        Sign in
+        {{ signInLoading ? "Redirecting..." : " Sign in" }}
       </button>
+
+      <router-link to="reset-password">
+        <h1 class="text-center text-[#800080] pt-2">Forgot password</h1>
+      </router-link>
     </form>
+    <router-link to="/signup">
+      <p class="text-center text-[#800080] pt-2 cursor-pointer">
+        Don't have an acoount , Signup here
+      </p>
+    </router-link>
   </div>
 
-  <div>
+  <div class="md:block hidden">
     <img
       src="/images/chart.jpeg"
       alt="chart-images"
@@ -56,5 +71,17 @@
     />
   </div>
 </template>
-<script setup
-></script>
+<script setup>
+import { useRouter } from "vue-router";
+import { useCreateClient } from "@/_supabase/useCreateClient";
+import { storeToRefs } from "pinia";
+
+const store = useCreateClient();
+const { signInLoading, signInError, signIn, loading } = storeToRefs(store);
+
+const { handleSignIn, handleOnTimeSignIn } = store;
+const router = useRouter();
+const handleSubmission = async () => {
+  await handleSignIn(router);
+};
+</script>

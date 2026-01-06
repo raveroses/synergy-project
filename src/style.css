@@ -80,6 +80,16 @@ td[data-table="table-detail"] {
   background: #555;
 }
 
+@media (max-width: "767px") {
+  .table-container {
+    width: 100%;
+  }
+
+  .container {
+    max-height: 100%;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
