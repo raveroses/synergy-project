@@ -20,7 +20,7 @@
             class="w-[500px] outline-none"
             v-model="changePassword.newPassword"
           />
-          <div @click="handleIsNewPasswordVisible">
+          <div @click="handleIsNewPasswordVisible" class="cursor-pointer font-semibold">
             <component :is="isNewPasswordVisible ? Eye : EyeOff" />
           </div>
         </div>
@@ -35,7 +35,7 @@
             class="w-[500px] outline-none"
             v-model="changePassword.confirmPassword"
           />
-          <div @click="handleIsConfirmPasswordVisible">
+          <div @click="handleIsConfirmPasswordVisible" class="cursor-pointer font-semibold">
             <component :is="isConfirmPasswordVisible ? Eye : EyeOff" />
           </div>
         </div>
@@ -45,7 +45,7 @@
         type="submit"
         class="bg-[#800080] text-white text-[15px] font-semibold p-3 rounded cursor-pointer"
       >
-        Update Password
+        {{ updateingPassword ? "Updating..." : "Update Password" }}
       </button>
     </form>
 
@@ -67,8 +67,12 @@ import { useCreateClient } from "@/_supabase/useCreateClient";
 import { storeToRefs } from "pinia";
 
 const store = useCreateClient();
-const { changePassword, isNewPasswordVisible, isConfirmPasswordVisible } =
-  storeToRefs(store);
+const {
+  changePassword,
+  isNewPasswordVisible,
+  isConfirmPasswordVisible,
+  updateingPassword,
+} = storeToRefs(store);
 
 const {
   handlePasswordUpdated,
@@ -77,7 +81,7 @@ const {
 } = store;
 const router = useRouter();
 const handleUpdate = async () => {
-  console.log("Im clicked")
+  console.log("Im clicked");
   await handlePasswordUpdated(router);
 };
 </script>

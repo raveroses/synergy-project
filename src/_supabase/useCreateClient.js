@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { createClient } from "@supabase/supabase-js";
 import { useLoading } from "vue-loading-overlay";
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useToast } from "vue-toast-notification";
 
 export const useCreateClient = defineStore("createClient", () => {
@@ -21,21 +21,51 @@ export const useCreateClient = defineStore("createClient", () => {
     password: "",
   });
 
-  // const getUserSession = async () => {
-  //   try {
-  //     const { data, error } = await supabase.auth.getSession();
-  //     const isUser = data.session;
+  let authSubscription = null;
+  const handleUserSession = async (session) => {
+    console.log(session);
+    const user = session.user.user_metadata;
+    const { full_name, email, picture, userName } = user;
 
-  //     if (!isUser) {
-  //       return false;
-  //     }
+    const splitFullName = full_name?.split(" ") || [];
 
-  //     return true;
-  //   } catch (e) {
-  //     console.log(e.message);
-  //     return false;
-  //   }
-  // };
+    const { error } = await supabase.value.from("user").insert(
+      {
+        firstName: splitFullName[0] ?? userName ?? "",
+        lastName: splitFullName[1] ?? "",
+        email: email,
+        phoneNumber: "",
+        socialLink: "",
+        imageUrl: picture ?? "",
+      },
+      { onConflict: "id" }
+    );
+
+    if (error) {
+      console.log("INSERT ERROR:", error.message);
+    }
+  };
+
+  onMounted(async () => {
+    const { data } = await supabase.value.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("AUTH EVENT:", event);
+
+        if (
+          (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
+          session?.user
+        ) {
+          await handleUserSession(session);
+        }
+      }
+    );
+
+    authSubscription = data.subscription;
+  });
+
+  onUnmounted(() => {
+    authSubscription?.unsubscribe();
+  });
 
   const handleOnTimeSignIn = async () => {
     loading.value = true;
@@ -59,6 +89,12 @@ export const useCreateClient = defineStore("createClient", () => {
         return { data: null, error };
       }
 
+      signUpUser.value = {
+        userName: "",
+        email: "",
+        password: "",
+      };
+
       return { data, error: null };
     } catch (error) {
       toast.error(error.message || "An error occurred during sign in");
@@ -77,12 +113,6 @@ export const useCreateClient = defineStore("createClient", () => {
     const password = signUpUser.value.password;
     let valid = true;
 
-    signUpUserError.value = {
-      userNameError: "",
-      emailError: "",
-      passwordError: "",
-    };
-
     if (!userName) {
       signUpUserError.value.userNameError = "Invalid Username";
       valid = false;
@@ -100,6 +130,9 @@ export const useCreateClient = defineStore("createClient", () => {
   };
 
   const handleAccountCreation = async (router) => {
+    if (!handleAccountCreationValidation()) {
+      return;
+    }
     signUpLoading.value = true;
     const loader = $loading.show({
       color: "#800080",
@@ -107,10 +140,6 @@ export const useCreateClient = defineStore("createClient", () => {
     });
 
     try {
-      if (!handleAccountCreationValidation()) {
-        return;
-      }
-
       const { data, error } = await supabase.value.auth.signUp({
         email: signUpUser.value.email,
         password: signUpUser.value.password,
@@ -129,7 +158,17 @@ export const useCreateClient = defineStore("createClient", () => {
         return { data: null, error };
       }
 
-      router.push("/login");
+      signUpUser.value = {
+        userNameError: "",
+        emailError: "",
+        passwordError: "",
+      };
+
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+
+      // await userTableCreation(data?.session?.user?.user_metadata);
       return { data, error: null };
     } catch (error) {
       toast.error(error.message || "An error occurred during sign in");
@@ -176,6 +215,9 @@ export const useCreateClient = defineStore("createClient", () => {
   };
 
   const handleSignIn = async (router) => {
+    if (!handleSignInValidation()) {
+      return;
+    }
     signInLoading.value = true;
     const loader = $loading.show({
       color: "#800080",
@@ -183,10 +225,6 @@ export const useCreateClient = defineStore("createClient", () => {
     });
 
     try {
-      if (!handleSignInValidation()) {
-        return;
-      }
-
       const { data, error } = await supabase.value.auth.signInWithPassword({
         email: signIn.value.email,
         password: signIn.value.password,
@@ -199,7 +237,14 @@ export const useCreateClient = defineStore("createClient", () => {
         return { data: null, error };
       }
 
-      router.push("/");
+      signIn.value = {
+        email: "",
+        password: "",
+      };
+
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
       return { data, error: null };
     } catch (error) {
       toast.error(error.message || "An error occurred during sign in");
@@ -231,14 +276,27 @@ export const useCreateClient = defineStore("createClient", () => {
       return;
     }
 
-    const { data, error } = await supabase.value.auth.resetPasswordForEmail(
-      resetPasswordDetail.value.resetEmail,
-      {
-        redirectTo: "http://localhost:5173/updatePassword",
-      }
-    );
+    try {
+      const { data, error } = await supabase.value.auth.resetPasswordForEmail(
+        resetPasswordDetail.value.resetEmail,
+        {
+          redirectTo: "http://localhost:5173/updatePassword",
+        }
+      );
 
-    toast.success("Please, check your mail");
+      if (error) {
+        toast.error(`Error updating password: ${error.message}`);
+        return;
+      }
+      resetPasswordDetail.value = {
+        resetEmail: "",
+      };
+
+      toast.success("Password reset link sent! Please check your email.");
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
   };
 
   const changePassword = ref({
@@ -266,12 +324,20 @@ export const useCreateClient = defineStore("createClient", () => {
     return true;
   };
 
-  const handlePasswordUpdated = async (router) => {
-    try {
-      if (!handleResetPasswordValidation()) {
-        return;
-      }
+  const updateingPassword = ref(false);
 
+  const handlePasswordUpdated = async (router) => {
+    if (!handleResetPasswordValidation()) {
+      return;
+    }
+
+    updateingPassword.value = true;
+    const loader = $loading.show({
+      color: "#800080",
+      backgroundColor: "#ffffff",
+    });
+
+    try {
       const { data, error } = await supabase.value.auth.updateUser({
         password: changePassword.value.confirmPassword,
       });
@@ -281,14 +347,27 @@ export const useCreateClient = defineStore("createClient", () => {
 
       if (error) {
         toast.error(`Error updating password: ${error.message}`);
+        loader.hide();
+        updateingPassword.value = false;
         return;
       }
 
-      router.push("/");
+      changePassword.value = {
+        newPassword: "",
+        confirmPassword: "",
+      };
       toast.success("Password updated successfully");
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
     } catch (e) {
+      loader.hide();
+      updateingPassword.value = false;
       console.error(e);
       throw new Error(e.message);
+    } finally {
+      loader.hide();
+      updateingPassword.value = false;
     }
   };
 
@@ -301,6 +380,28 @@ export const useCreateClient = defineStore("createClient", () => {
   const handleIsConfirmPasswordVisible = () => {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   };
+
+  // const handleRetrieveSession = async () => {
+  //   try {
+  //     const { data, error } = await supabase.value.auth.getSession();
+
+  //     if (error) {
+  //       console.log(error.message);
+  //       return;
+  //     }
+
+  //     if (!data.session) return;
+  //     // console.log("SESSION", data.session.user.user_metadata);
+  //     // console.log("METDATA", data.session.user_metadata);
+
+  //     const sessionGetter = data.session.user.user_metadata;
+  //     await userTableCreation(sessionGetter);
+
+  //     return sessionGetter;
+  //   } catch (error) {
+  //     console.log(error.message);
+  //   }
+  // };
 
   return {
     supabase,
@@ -322,5 +423,7 @@ export const useCreateClient = defineStore("createClient", () => {
     isConfirmPasswordVisible,
     handleIsNewPasswordVisible,
     handleIsConfirmPasswordVisible,
+    updateingPassword,
+    // handleRetrieveSession,
   };
 });

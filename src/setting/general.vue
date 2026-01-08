@@ -27,22 +27,22 @@
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Name</h2>
-          <h2>Odekunle Waris</h2>
+          <h2>{{ savedUser.lastName + " " + savedUser.firstName }}</h2>
         </div>
         <button class="px-2 rounded border border-gray-200">Edit</button>
       </div>
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Contact</h2>
-          <h2>Phone: +9024986450</h2>
-          <h2>Email :odekunlewaris@gmail.com</h2>
+          <h2>Phone: {{ savedUser.phoneNumber }}</h2>
+          <h2>Email :{{ savedUser.email }}</h2>
         </div>
         <button class="px-2 rounded border border-gray-200">Edit</button>
       </div>
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Social Media</h2>
-          <h2>Linkdein: https//:odekunlewaris</h2>
+          <h2>Linkdein: {{ savedUser.socialLink }}</h2>
         </div>
         <button class="px-2 rounded border border-gray-200">Edit</button>
       </div>
@@ -71,6 +71,7 @@
 
   <form
     class="absolute top-[20%] left-[50%] w-[600px] bg-white rounded-xl p-10 z-40"
+    @submit.prevent="handleSaveChange"
   >
     <div class="flex justify-between">
       <h2 class="font-semibold text-xl">Edit personal Information</h2>
@@ -78,69 +79,100 @@
     </div>
 
     <div class="flex justify-between items-center my-5">
-      <div class="firstname">
+      <div class="firstname flex flex-col gap-2">
         <div class="flex justify-between items-center">
-          <label for="first">First name</label>
-          <p class="error">Wrong format</p>
+          <label for="first " class="font-semibold text-[16px]"
+            >First name</label
+          >
+          <p class="error font-semibold text-[14px] text-red-500">
+            {{ storingError.firstName }}
+          </p>
         </div>
         <input
           type="text"
           placeholder="First Name"
-          class="border border-[#800080] w-[250px] py-2 px-2 rounded text-white outline-none"
+          v-model="savedUser.firstName"
+          class="border border-[#800080] w-[250px] py-2 px-2 rounded outline-none"
+          required
         />
       </div>
 
-      <div class="secondname">
+      <div class="secondname flex flex-col gap-2">
         <div class="flex justify-between items-center">
-          <label for="lastName">Last name</label>
-          <p class="error">Wrong format</p>
+          <label for="lastName  " class="font-semibold text-[16px]"
+            >Last name</label
+            
+          >
+          <p class="error font-semibold text-[14px] text-red-500">
+            {{ storingError.lastName }}
+          </p>
         </div>
         <input
           type="text"
-          class="border border-[#800080] w-[250px] py-2 px-2 rounded text-white outline-none"
+          v-model="savedUser.lastName"
+          class="border border-[#800080] w-[250px] py-2 px-2 rounded outline-none"
           placeholder="Last Name"
+          required
         />
       </div>
     </div>
 
     <div class="flex flex-col gap-5">
-      <div class="email">
+      <div class="email flex flex-col gap-2">
         <div class="flex justify-between items-center">
-          <label for="email">Email address</label>
-          <p class="error">Wrong format</p>
+          <label for="email" class="font-semibold text-[16px]"
+            >Email address</label
+          >
+          <p class="error font-semibold text-[14px] text-red-500">
+            {{ storingError.email }}
+          </p>
         </div>
         <input
           type="email"
+          v-model="savedUser.email"
           placeholder="info@gmail.com"
-          class="border border-[#800080] w-full py-2 px-2 rounded text-white outline-none"
+          class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
+          required
         />
       </div>
-      <div class="number">
+      <div class="number flex flex-col gap-2">
         <div class="flex justify-between items-center">
-          <label for="email">Phone Number</label>
-          <p class="error">Wrong format</p>
+          <label for="email" class="font-semibold text-[16px]"
+            >Phone Number</label
+          >
+          <p class="error font-semibold text-[14px] text-red-500">
+            {{ storingError.phoneNumber }}
+          </p>
         </div>
         <input
           type="tel"
+          v-model="savedUser.phoneNumber"
           placeholder="(0900-345-9997-00)"
-          class="border border-[#800080] w-full py-2 px-2 rounded text-white outline-none"
+          class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
+          required
         />
       </div>
-      <div class="social">
+      <div class="social flex flex-col gap-2">
         <div class="flex justify-between items-center">
-          <label for="email">Linkedin Link</label>
-          <p class="error">Wrong format</p>
+          <label for="email" class="font-semibold text-[16px]"
+            >Linkedin Link</label
+          >
+          <p class="error font-semibold text-[14px] text-red-500">
+            {{ storingError.socialLink }}
+          </p>
         </div>
         <input
           type="text"
+          v-model="savedUser.socialLink"
           placeholder="https://raverose"
-          class="border border-[#800080] w-full py-2 px-2 rounded text-white outline-none"
+          class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
+          required
         />
       </div>
     </div>
     <div class="flex justify-end">
       <button
-        class="bg-[#800080] text-white p-3 rounded-[5px] font-[15px] my-5"
+        class="bg-[#800080] text-white p-3 rounded-[5px] font-[15px] my-5 cursor-pointer"
       >
         Save changes
       </button>
@@ -151,4 +183,13 @@
 
 <script setup>
 import { Check, Trash2, Upload, X } from "lucide-vue-next";
+import { storeToRefs } from "pinia";
+import { useProfile } from "../setting/functions/useProfile.js";
+
+const store = useProfile();
+
+const { savedUser, storingError } = storeToRefs(store);
+
+const { handleSaveChange } = store;
+
 </script>

@@ -15,16 +15,18 @@
       </span>
     </button>
 
-    <div class="flex items-center justify-center gap-2 my-3">
+    <div class="flex items-center justify-center gap-2 my-10">
       <div class="w-[230px] h-0.5 bg-gray-400"></div>
       <div class="text-md font-bold">Or</div>
       <div class="w-[230px] h-0.5 bg-gray-400"></div>
     </div>
 
-    <form class="flex flex-col gap-10" @submit.prevent="submit">
+    <form class="flex flex-col gap-10 my-10" @submit.prevent="submit">
       <div class="name">
         <div class="flex justify-between mb-1">
-          <label for="firstname">First Name</label>
+          <label for="firstname" class="text-[15px] font-semibold"
+            >First Name</label
+          >
           <div>{{ signUpUserError.userName }}</div>
         </div>
         <input
@@ -36,7 +38,7 @@
       </div>
       <div class="name">
         <div class="flex justify-between mb-1">
-          <label for="email">Email</label>
+          <label for="email" class="text-[15px] font-semibold">Email</label>
           <div>{{ signUpUserError.email }}</div>
         </div>
         <input
@@ -48,26 +50,39 @@
       </div>
       <div class="name">
         <div class="flex justify-between mb-1">
-          <label for="password">Password</label>
+          <label for="password" class="text-[15px] font-semibold"
+            >Password</label
+          >
           <div>{{ signUpUserError.password }}</div>
         </div>
-        <input
-          type="password"
-          v-model="signUpUser.password"
-          required
-          class="w-full border border-[#800080] p-3 rounded outline-none"
-        />
+        <div
+          class="w-full border border-[#800080] p-3 rounded flex justify-between"
+        >
+          <input
+            :type="isPasswordVisible ? 'text' : 'password'"
+            class="w-[500px] outline-none"
+            v-model="signUpUser.password"
+            required
+          />
+
+          <div
+            class="cursor-pointer font-semibold"
+            @click="handleIsPasswordVisible"
+          >
+            <component :is="isPasswordVisible ? Eye : EyeOff" />
+          </div>
+        </div>
       </div>
 
       <button
         type="submit"
-        class="bg-[#800080] text-white w-full p-3 text-[15px] font-semibold rounded"
+        class="bg-[#800080] text-white w-full p-3 text-[15px] font-semibold rounded cursor-pointer"
       >
         {{ signUpLoading ? " Redirecting ..." : " Create account" }}
       </button>
     </form>
     <router-link to="/login">
-      <p class="text-center text-[#800080] pt-2">
+      <p class="text-center text-[#800080] pt-2 font-semibold">
         Already have account , Login here
       </p>
     </router-link>
@@ -84,7 +99,9 @@
 
 <script setup>
 import { useCreateClient } from "@/_supabase/useCreateClient";
+import { Eye, EyeOff } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const store = useCreateClient();
@@ -97,5 +114,9 @@ const router = useRouter();
 
 const submit = async () => {
   await handleAccountCreation(router);
+};
+const isPasswordVisible = ref(false);
+const handleIsPasswordVisible = () => {
+  isPasswordVisible.value = !isPasswordVisible.value;
 };
 </script>

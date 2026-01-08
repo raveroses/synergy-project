@@ -500,7 +500,6 @@ export const useTransaction = defineStore("detail", () => {
     }
   };
 
-  console.log(searchingResult);
   return {
     isSavings,
     isLoan,
