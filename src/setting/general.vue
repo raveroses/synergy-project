@@ -27,31 +27,55 @@
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Name</h2>
-          <h2>{{ savedUser.lastName + " " + savedUser.firstName }}</h2>
+          <h2>{{ profileStore.lastName + " " + profileStore.firstName }}</h2>
         </div>
-        <button class="px-2 rounded border border-gray-200">Edit</button>
+        <button
+          class="px-2 rounded border border-gray-200"
+          data-id="1"
+          data-name="name"
+        >
+          Edit
+        </button>
       </div>
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Contact</h2>
-          <h2>Phone: {{ savedUser.phoneNumber }}</h2>
-          <h2>Email :{{ savedUser.email }}</h2>
+          <h2>Phone: {{ profileStore.phoneNumber }}</h2>
+          <h2>Email :{{ profileStore.email }}</h2>
         </div>
-        <button class="px-2 rounded border border-gray-200">Edit</button>
+        <button
+          class="px-2 rounded border border-gray-200"
+          data-id="2"
+          data-name="contact"
+        >
+          Edit
+        </button>
       </div>
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Social Media</h2>
-          <h2>Linkdein: {{ savedUser.socialLink }}</h2>
+          <h2>Linkdein: {{ profileStore.socialLink }}</h2>
         </div>
-        <button class="px-2 rounded border border-gray-200">Edit</button>
+        <button
+          class="px-2 rounded border border-gray-200"
+          data-id="3"
+          data-name="social-link"
+        >
+          Edit
+        </button>
       </div>
       <div class="flex justify-between items-center">
         <div>
           <h2 class="font-semibold text-[16px]">Language $ currency</h2>
           <h2>English $ USD</h2>
         </div>
-        <button class="px-2 rounded border border-gray-200">Edit</button>
+        <!-- <button
+          class="px-2 rounded border border-gray-200"
+          data-id="4"
+          data-name="currency"
+        >
+          Edit
+        </button> -->
       </div>
       <div class="flex justify-between items-center">
         <div>
@@ -63,7 +87,13 @@
             <span><Check class="text-[12px]" /></span>
             <span class="text-[13px]">Connected</span>
           </p>
-          <button class="px-2 rounded border border-gray-200">Edit</button>
+          <!-- <button
+            class="px-2 rounded border border-gray-200"
+            data-id="5"
+            data-name="google"
+          >
+            Edit
+          </button> -->
         </div>
       </div>
     </div>
@@ -91,9 +121,11 @@
         <input
           type="text"
           placeholder="First Name"
-          v-model="savedUser.firstName"
+          v-model="profileStore.firstName"
           class="border border-[#800080] w-[250px] py-2 px-2 rounded outline-none"
           required
+          data-input-id="name"
+          :disabled="isBtnName !== 'name'"
         />
       </div>
 
@@ -101,7 +133,6 @@
         <div class="flex justify-between items-center">
           <label for="lastName  " class="font-semibold text-[16px]"
             >Last name</label
-            
           >
           <p class="error font-semibold text-[14px] text-red-500">
             {{ storingError.lastName }}
@@ -109,10 +140,12 @@
         </div>
         <input
           type="text"
-          v-model="savedUser.lastName"
+          v-model="profileStore.lastName"
           class="border border-[#800080] w-[250px] py-2 px-2 rounded outline-none"
           placeholder="Last Name"
           required
+          data-input-id="name"
+          :disabled="isBtnName !== 'name'"
         />
       </div>
     </div>
@@ -129,10 +162,12 @@
         </div>
         <input
           type="email"
-          v-model="savedUser.email"
+          v-model="profileStore.email"
           placeholder="info@gmail.com"
           class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
           required
+          data-input-id="contact"
+          :disabled="isBtnName !== 'contact'"
         />
       </div>
       <div class="number flex flex-col gap-2">
@@ -146,10 +181,12 @@
         </div>
         <input
           type="tel"
-          v-model="savedUser.phoneNumber"
+          v-model="profileStore.phoneNumber"
           placeholder="(0900-345-9997-00)"
           class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
           required
+          data-input-id="contact"
+          :disabled="isBtnName !== 'contact'"
         />
       </div>
       <div class="social flex flex-col gap-2">
@@ -163,10 +200,12 @@
         </div>
         <input
           type="text"
-          v-model="savedUser.socialLink"
+          v-model="profileStore.socialLink"
           placeholder="https://raverose"
           class="border border-[#800080] w-full py-2 px-2 rounded outline-none"
           required
+          data-input-id="social-link"
+          :disabled="isBtnName !== 'social-link'"
         />
       </div>
     </div>
@@ -185,11 +224,44 @@
 import { Check, Trash2, Upload, X } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
 import { useProfile } from "../setting/functions/useProfile.js";
+import { onMounted, ref } from "vue";
 
 const store = useProfile();
 
-const { savedUser, storingError } = storeToRefs(store);
-
+const { storingError, profileStore } = storeToRefs(store);
 const { handleSaveChange } = store;
 
+const buttons = ref();
+const inputs = ref();
+const isBtnName = ref("");
+
+onMounted(() => {
+  buttons.value = Array.from(document.querySelectorAll("[data-id]"));
+  inputs.value = Array.from(document.querySelectorAll("[data-input-id]"));
+
+  buttons.value.forEach((button) => {
+    button.addEventListener("click", () => {
+      const buttonName = button.dataset.name;
+
+      const matchingInput = inputs.value.find(
+        (input) => input.dataset.inputId === buttonName
+      );
+
+      if (matchingInput) {
+        handleEditBtn(buttonName, matchingInput.dataset.inputId);
+      }
+    });
+  });
+});
+
+function handleEditBtn(buttonSetName, inputSetName) {
+  console.log(buttonSetName);
+  // console.log(inputSetName);
+  if (buttonSetName === inputSetName) {
+    console.log("clicked", buttonSetName);
+    isBtnName.value = buttonSetName;
+  }
+  // console.log(buttonSetName);
+  // console.log(inputSetName);
+}
 </script>

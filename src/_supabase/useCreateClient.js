@@ -23,44 +23,49 @@ export const useCreateClient = defineStore("createClient", () => {
 
   let authSubscription = null;
   const handleUserSession = async (session) => {
-    console.log(session);
-    const user = session.user.user_metadata;
-    const { full_name, email, picture, userName } = user;
+    try {
+      if (!session) return;
 
-    const splitFullName = full_name?.split(" ") || [];
+      const user = session.user.user_metadata;
+      const { full_name, picture, userName } = user;
 
-    const { error } = await supabase.value.from("user").insert(
-      {
-        firstName: splitFullName[0] ?? userName ?? "",
-        lastName: splitFullName[1] ?? "",
-        email: email,
-        phoneNumber: "",
-        socialLink: "",
-        imageUrl: picture ?? "",
-      },
-      { onConflict: "id" }
-    );
-
-    if (error) {
-      console.log("INSERT ERROR:", error.message);
+      const splitFullName = full_name?.split(" ") || [];
+      const { data, error } = await supabase.value
+        .from("users")
+        .upsert(
+          {
+            id: session.user.id,
+            first_name: splitFullName[0] ?? userName ?? "",
+            last_name: splitFullName[1] ?? "",
+            email: session.user.email,
+            phone_number: "",
+            social_link: "",
+            image_url: picture ?? "",
+          },
+          { onConflict: "id" }
+        )
+        .select();
+    } catch (error) {
+      console.log(error);
     }
   };
 
   onMounted(async () => {
-    const { data } = await supabase.value.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("AUTH EVENT:", event);
-
-        if (
-          (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
-          session?.user
-        ) {
-          await handleUserSession(session);
+    try {
+      const { data } = await supabase.value.auth.onAuthStateChange(
+        (event, session) => {
+          setTimeout(async () => {
+            if (event === "SIGNED_IN" && session?.user) {
+              await handleUserSession(session);
+            }
+          }, 0);
         }
-      }
-    );
+      );
 
-    authSubscription = data.subscription;
+      authSubscription = data.subscription;
+    } catch (error) {
+      console.log(error.message);
+    }
   });
 
   onUnmounted(() => {
@@ -343,7 +348,6 @@ export const useCreateClient = defineStore("createClient", () => {
       });
 
       console.log(error);
-      console.log(data);
 
       if (error) {
         toast.error(`Error updating password: ${error.message}`);
