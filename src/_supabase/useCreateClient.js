@@ -31,12 +31,14 @@ export const useCreateClient = defineStore("createClient", () => {
       firstName: "",
       lastName: "",
       email: "",
+      social_link: "",
     }
   );
 
   const handleUserSession = async (session) => {
     if (!session?.user) return;
     if (hasHandledSession) return;
+    console.log(session);
 
     hasHandledSession = true;
 
@@ -46,18 +48,9 @@ export const useCreateClient = defineStore("createClient", () => {
 
       const splitFullName = full_name?.split(" ") || [];
 
-      retrieve.value = {
-        firstName: splitFullName[0],
-        lastName: splitFullName[1],
-        email: session.user.email,
-        number: session.user.phone,
-      };
-
-      localStorage.setItem("retrieve", JSON.stringify(retrieve.value));
-
       const { data: existingUser } = await supabase
         .from("users")
-        .select("id")
+        .select()
         .eq("id", session.user.id)
         .maybeSingle();
 
@@ -72,6 +65,18 @@ export const useCreateClient = defineStore("createClient", () => {
           image_url: picture ?? "",
         });
       }
+
+      console.log("existingUser", existingUser);
+
+      retrieve.value = {
+        firstName: splitFullName[0] || userName,
+        lastName: splitFullName[1],
+        email: session.user.email,
+        number: session.user.phone,
+        social_link: existingUser.social_link,
+      };
+
+      localStorage.setItem("retrieve", JSON.stringify(retrieve.value));
     } catch (error) {
       console.error("handleUserSession error:", error);
     }
@@ -100,10 +105,6 @@ export const useCreateClient = defineStore("createClient", () => {
       // if (event === "SIGNED_OUT") {
       // }
     });
-  };
-
-  const destroyAuth = () => {
-    authSubscription?.unsubscribe();
   };
 
   const handleOnTimeSignIn = async () => {
@@ -414,13 +415,28 @@ export const useCreateClient = defineStore("createClient", () => {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   };
 
-  const profileStore = computed(() => ({
-    first_name: signUpUser.value.userName || retrieve.value.firstName || "",
-    last_name: retrieve.value.lastName || "",
-    email: signUpUser.value.email || retrieve.value.email || "",
-    phone_number: retrieve.value.number || "",
-    social_link: "",
-  }));
+  // const profileStore = computed(() => ({
+  //   first_name: signUpUser.value.userName || retrieve.value.firstName || "",
+  //   last_name: retrieve.value.lastName || "",
+  //   email: signUpUser.value.email || retrieve.value.email || "",
+  //   phone_number: retrieve.value.number || "",
+  //   social_link: "",
+  // } ));
+
+  const profileStore = computed(() => {
+    const savedProfile = localStorage.getItem("profile");
+    if (savedProfile) {
+      return JSON.parse(savedProfile);
+    }
+
+    return {
+      first_name: signUpUser.value.userName || retrieve.value.firstName || "",
+      last_name: retrieve.value.lastName || "",
+      email: signUpUser.value.email || retrieve.value.email || "",
+      phone_number: retrieve.value.number || "",
+      social_link: "",
+    };
+  });
 
   const storingError = ref({});
 
@@ -635,6 +651,12 @@ export const useCreateClient = defineStore("createClient", () => {
     localStorage.removeItem("userAcctCreationDetail");
     router.push("/");
   };
+
+ 
+
+  // const isDashBoardOpen= ref(false)
+
+  // han
   return {
     supabase,
     handleOnTimeSignIn,

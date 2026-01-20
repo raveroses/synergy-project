@@ -1,5 +1,5 @@
 <template>
-  <div class="md:w-[40%] w-full flex-col">
+  <div class="md:w-[40%] w-full flex-col z-0">
     <div class="loan rounded-[5.8px] md:p-5 p-2 bg-[#FFFFFF]" v-if="currentValue">
       <div class="flex justify-between">
         <h2 class="text-[20px] font-medium">

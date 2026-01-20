@@ -1,7 +1,9 @@
 <template>
-  <div class="w-[290px] h-[1150px] bg-[#2E052E] p-[30px]">
+  <div
+    class="md:w-[290px] md:h-[1150px] w-[250px] h-full bg-[#2E052E] p-[30px] md:block md:static absolute z-30 cancel"
+  >
     <h2
-      class="text-white text-[32px] font-bold tracking-0 leading-[23.18px] text-center"
+      class="text-white md:text-[32px] text-[20px] font-bold tracking-0 leading-[23.18px] md:text-center text-left"
     >
       Synergy
     </h2>
@@ -11,7 +13,7 @@
         <router-link
           :to="`${item.path}`"
           :class="[
-            'flex gap-[30px] items-center w-[235px] h-[46px] py-[7.73px] px-[11.59px] cursor-pointer ',
+            'flex gap-[30px] items-center md:w-[235px] h-[46px] w-[200px] py-[7.73px] px-[11.59px] cursor-pointer ',
             item.path.toLowerCase() === currentPath
               ? 'rounded-[5.8px] bg-[#800080]'
               : '',
@@ -89,5 +91,4 @@ watch(
     currentPath.value = newPath;
   }
 );
-
 </script>

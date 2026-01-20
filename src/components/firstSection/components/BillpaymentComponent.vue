@@ -1,5 +1,5 @@
 <template>
-  <div class="px-10">
+  <div class="px-10 z-0">
     <h1 class="text-2xl font-semibold pb-5">Bill payment</h1>
 
     <form @submit.prevent="handleSearch">
@@ -89,10 +89,10 @@
       </div>
     </div>
 
-    <div class="my-10">
+    <div class="my-10 ">
       <h1 class="text-2xl font-semibold">Invoice</h1>
 
-      <table class="my-10">
+      <table class="my-10 ">
         <thead>
           <tr>
             <th>Invoice</th>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex md:flex-row flex-col gap-5">
+  <div class="flex md:flex-row flex-col gap-5 md:static relative">
     <Sidebar
       v-if="
         !route.path.includes('signup') &&
@@ -19,9 +19,10 @@
           "
         />
       </slot>
-
+      <div class="md:hidden my-4 mx-2 text-[#800080] text-2xl">
+        <LayoutDashboard />
+      </div>
       <div class="md:p-[30px] p-1">
-      <!-- <div class="w-full h-full"> -->
         <router-view />
       </div>
     </div>
@@ -33,6 +34,7 @@ import Sidebar from "./sidebar/Sidebar.vue";
 import Header from "./header/Header.vue";
 
 import { useRoute } from "vue-router";
+import { LayoutDashboard } from "lucide-vue-next";
 
 const route = useRoute();
 </script>

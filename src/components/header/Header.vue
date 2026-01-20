@@ -1,8 +1,5 @@
 <template>
   <header class="bg-[#FFFFFF] w-full flex justify-between p-3">
-    <!-- absolute top-[25.12px] left-[320.7px] -->
-    <!-- <div class="w-full flex justify-between"> -->
-
     <div class="text-2xl font-bold text-[#800080] block md:hidden">
       <h1>Synergy</h1>
     </div>
@@ -51,7 +48,9 @@
           />
         </div>
         <div>
-          <h2 class="font-bold text-[18px] leading-[28.98px]">{{ profileStore.first_name }}</h2>
+          <h2 class="font-bold text-[18px] leading-[28.98px]">
+            {{ profileStore.first_name }}
+          </h2>
         </div>
         <div class="arrow-down text-[18px]">
           <svg
@@ -71,16 +70,15 @@
         </div>
       </div>
     </div>
-    <!-- </div> -->
   </header>
 </template>
 
 <script setup>
 import sunsetSvg from "../sunsetSvg.vue";
-import {useCreateClient} from "../../_supabase/useCreateClient.js";
+import { useCreateClient } from "../../_supabase/useCreateClient.js";
 import { storeToRefs } from "pinia";
 
 const store = useCreateClient();
 
-const { profileStore,imageGetter} = storeToRefs(store);
+const { profileStore, imageGetter } = storeToRefs(store);
 </script>

@@ -15,7 +15,7 @@
 
         <Insight />
       </div>
-      <div class="my-5">
+      <div class="my-5 ">
         <Transaction />
       </div>
     </slot>
