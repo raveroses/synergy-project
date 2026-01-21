@@ -7,6 +7,7 @@
         !route.path.includes('reset-password') &&
         !route.path.includes('updatePassword')
       "
+      :toggle-ref="dashboardBtn"
     />
     <div class="w-full">
       <slot name="header">
@@ -19,7 +20,11 @@
           "
         />
       </slot>
-      <div class="md:hidden my-4 mx-2 text-[#800080] text-2xl">
+      <div
+        ref="dashboardBtn"
+        class="md:hidden my-4 mx-2 text-[#800080] text-2xl"
+        @click="handleOpen"
+      >
         <LayoutDashboard />
       </div>
       <div class="md:p-[30px] p-1">
@@ -32,9 +37,18 @@
 <script setup>
 import Sidebar from "./sidebar/Sidebar.vue";
 import Header from "./header/Header.vue";
-
+import { useCreateClient } from ".././_supabase/useCreateClient.js";
 import { useRoute } from "vue-router";
 import { LayoutDashboard } from "lucide-vue-next";
+import { storeToRefs } from "pinia";
+import { ref } from "vue";
 
 const route = useRoute();
+const store = useCreateClient();
+const dashboardBtn = ref(null);
+const { isOpen } = storeToRefs(store);
+
+const handleOpen = () => {
+  isOpen.value = true;
+};
 </script>

@@ -1,6 +1,10 @@
 <template>
   <div
-    class="md:w-[290px] md:h-[1150px] w-[250px] h-full bg-[#2E052E] p-[30px] md:block md:static absolute z-30 cancel"
+    :class="[
+      'md:w-[290px] md:h-[1150px] w-[250px] h-full bg-[#2E052E] p-[30px] md:static absolute z-30',
+      isOpen ? 'block' : 'hidden',
+    ]"
+    ref="sidebar"
   >
     <h2
       class="text-white md:text-[32px] text-[20px] font-bold tracking-0 leading-[23.18px] md:text-center text-left"
@@ -31,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import {
   BanknoteArrowUp,
   Cog,
@@ -42,7 +46,8 @@ import {
   SquaresExclude,
 } from "lucide-vue-next";
 import { useRoute } from "vue-router";
-
+import { useCreateClient } from "../../_supabase/useCreateClient.js";
+import { storeToRefs } from "pinia";
 const route = useRoute();
 const currentPath = ref(route.path);
 
@@ -85,6 +90,36 @@ const sideBarMenu = ref([
   },
 ]);
 
+const props = defineProps({
+  toggleRef: Object,
+});
+const store = useCreateClient();
+
+const { isOpen } = storeToRefs(store);
+
+const sidebar = ref(null);
+
+const handleOutsideClick = (event) => {
+  if (window.innerWidth >= 768) return;
+
+  if (!sidebar.value) return;
+
+  // ignore toggleRef clicks
+  if (
+    !sidebar.value.contains(event.target) &&
+    (!props.toggleRef.value || !props.toggleRef.value.contains(event.target))
+  ) {
+    isOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleOutsideClick);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", handleOutsideClick);
+});
 watch(
   () => route.path,
   (newPath) => {

@@ -1,7 +1,15 @@
 import { defineStore } from "pinia";
 import { createClient } from "@supabase/supabase-js";
 import { useLoading } from "vue-loading-overlay";
-import { ref, onMounted, onUnmounted, computed, watch, watchEffect } from "vue";
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch,
+  watchEffect,
+  onBeforeUnmount,
+} from "vue";
 import { useToast } from "vue-toast-notification";
 
 export const useCreateClient = defineStore("createClient", () => {
@@ -21,7 +29,6 @@ export const useCreateClient = defineStore("createClient", () => {
       password: "",
     }
   );
-  const shouldProfilePersistent = ref(true);
 
   let authSubscription = null;
   let hasHandledSession = false;
@@ -73,7 +80,7 @@ export const useCreateClient = defineStore("createClient", () => {
         lastName: splitFullName[1],
         email: session.user.email,
         number: session.user.phone,
-        social_link: existingUser.social_link,
+        social_link: existingUser?.social_link,
       };
 
       localStorage.setItem("retrieve", JSON.stringify(retrieve.value));
@@ -652,11 +659,8 @@ export const useCreateClient = defineStore("createClient", () => {
     router.push("/");
   };
 
- 
+  const isOpen = ref(false);
 
-  // const isDashBoardOpen= ref(false)
-
-  // han
   return {
     supabase,
     handleOnTimeSignIn,
@@ -689,5 +693,6 @@ export const useCreateClient = defineStore("createClient", () => {
     getImageUrl,
     imageGetter,
     handleLogout,
+    isOpen,
   };
 });
