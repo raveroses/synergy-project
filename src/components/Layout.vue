@@ -22,8 +22,8 @@
       </slot>
       <div
         ref="dashboardBtn"
-        class="md:hidden my-4 mx-2 text-[#800080] text-2xl"
-        @click="handleOpen"
+        class="md:hidden my-4 mx-2 text-[#800080] text-2xl inline-block"
+        @click.stop="handleOpen"
       >
         <LayoutDashboard />
       </div>

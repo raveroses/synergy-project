@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'md:w-[290px] md:h-[1150px] w-[250px] h-full bg-[#2E052E] p-[30px] md:static absolute z-30',
+      'md:w-[290px] md:h-[1150px] w-[250px] h-[1000px] bg-[#2E052E] p-[30px] md:block md:static absolute z-30',
       isOpen ? 'block' : 'hidden',
     ]"
     ref="sidebar"
@@ -100,8 +100,6 @@ const { isOpen } = storeToRefs(store);
 const sidebar = ref(null);
 
 const handleOutsideClick = (event) => {
-  if (window.innerWidth >= 768) return;
-
   if (!sidebar.value) return;
 
   // ignore toggleRef clicks

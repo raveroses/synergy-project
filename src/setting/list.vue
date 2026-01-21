@@ -3,12 +3,12 @@
 
   <div class="w-full h-0.5 bg-gray-200 my-2"></div>
 
-  <div class="setting flex items-start w-full gap-5 py-5">
-    <ul class="w-[20%]">
+  <div class="setting flex md:flex-row flex-col items-start w-full gap-5 py-5">
+    <ul class="md:w-[20%] w-full flex md:flex-col flex-row justify-between">
       <li
         v-for="list in settingLists"
         :key="list.name"
-        class="bg-[#800080] mb-4 w-[200px] text-left font-semibold p-2.5 rounded-[5px] text-white flex gap-5"
+        class="bg-[#800080] mb-4 md:w-[200px] w-[150px] text-left font-semibold p-2.5  rounded-[5px] text-white flex gap-5"
       >
         <div>
           {{ list.name }}

@@ -1,5 +1,5 @@
 <template>
-  <div class="px-10 z-0">
+  <div class="md:px-10 px-2 z-0">
     <h1 class="text-2xl font-semibold pb-5">Bill payment</h1>
 
     <form @submit.prevent="handleSearch">

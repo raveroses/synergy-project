@@ -1,5 +1,5 @@
 <template>
-  <div class="w-[75%] border-l border-gray-200 pl-5">
+  <div class="md:w-[75%] w-full border-l border-gray-200 pl-5">
     <div class="image-palace flex justify-between">
       <div>
         <img
@@ -107,7 +107,7 @@
   </div>
 
   <form
-    :class="`absolute top-[20%] left-[50%] w-[600px] bg-white rounded-xl p-10 z-40 ${isOpen ? 'block' : 'hidden'}`"
+    :class="`absolute top-[20%] md:left-[50%] md:w-[600px] w-full bg-white rounded-xl p-10 z-40 ${isOpen ? 'block' : 'hidden'}`"
     @submit.prevent="handleSaveChange"
   >
     <div class="flex justify-between">
@@ -233,7 +233,12 @@
       </button>
     </div>
   </form>
-  <!-- <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div> -->
+  <div
+    :class="[
+      'fixed inset-0 bg-black/50 backdrop-blur-sm',
+      isOpen ? 'block' : 'hidden',
+    ]"
+  ></div>
 </template>
 
 <script setup>

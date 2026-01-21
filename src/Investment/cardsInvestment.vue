@@ -1,11 +1,11 @@
 <template>
   <div>
     <div
-      class="w-full flex md:flex-row flex-col justify-between md:items-center gap-3"
+      class="w-full flex md:flex-row flex-col justify-between md:items-center gap-5 mb-10"
     >
       <div
         v-for="(item, index) in cardComponent"
-        class="bg-[#FFFF] w-[380px] flex flex-col gap-5 p-5"
+        class="bg-[#FFFF] md:w-[350px] w-full flex flex-col md:gap-5 p-5 "
         :key="index"
       >
         <div class="flex justify-between">

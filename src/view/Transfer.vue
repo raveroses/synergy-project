@@ -132,7 +132,7 @@
                 class="flex items-center justify-start gap-5"
                 data-table="table-detail"
               >
-                <Img
+                <img
                   src="/images/bene.jpg"
                   alt="images-of-beneficiaries"
                   class="w-[38.64px] h-[38.64px] rounded-[193.19px]"
@@ -183,7 +183,7 @@
   </div>
 
   <div
-    class="savings absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    class="savings absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20"
     v-show="isSavings"
   >
     <div class="flex gap-40 font-bold my-10">
@@ -244,7 +244,7 @@
   </div>
 
   <div
-    class="loan absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    class="loan absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20 "
     v-show="isLoan"
   >
     <div class="flex gap-40 font-bold my-10">
@@ -304,7 +304,7 @@
     </form>
   </div>
   <div
-    class="transferFund absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    class="transferFund absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20"
     v-show="isTransferFund"
   >
     <div class="flex gap-40 font-bold my-10">
@@ -364,7 +364,7 @@
     </form>
   </div>
   <div
-    class="repayment absolute top-20 left-[35%] w-[600px] p-6 rounded-xl bg-white z-20"
+    class="repayment absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20"
     v-show="isRepayment"
   >
     <div class="flex gap-40 font-bold my-10">
