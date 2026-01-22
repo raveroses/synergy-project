@@ -10,11 +10,7 @@ import Saving from "../view/Saving.vue";
 import Loan from "../view/Loan.vue";
 import ResetPassword from "../view/ResetPassword.vue";
 import UpdatePassword from "../view/UpdatePassword.vue";
-import { createClient } from "@supabase/supabase-js";
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from "../_supabase/supabase.js";
 
 const routes = [
   {

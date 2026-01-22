@@ -285,7 +285,6 @@ onMounted(() => {
 function handleEditBtn(buttonSetName, inputSetName) {
   console.log(buttonSetName);
   if (buttonSetName === inputSetName) {
-    console.log("clicked", buttonSetName);
     isBtnName.value = buttonSetName;
   }
 }
@@ -298,5 +297,4 @@ onMounted(() => {
   getImageUrl();
 });
 
-console.log("imageGetter", imageGetter.value);
 </script>

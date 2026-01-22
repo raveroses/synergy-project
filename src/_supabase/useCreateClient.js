@@ -1,22 +1,9 @@
 import { defineStore } from "pinia";
-import { createClient } from "@supabase/supabase-js";
 import { useLoading } from "vue-loading-overlay";
-import {
-  ref,
-  onMounted,
-  onUnmounted,
-  computed,
-  watch,
-  watchEffect,
-  onBeforeUnmount,
-} from "vue";
+import { ref, computed } from "vue";
 import { useToast } from "vue-toast-notification";
-
-export const useCreateClient = defineStore("createClient", () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabase } from ".././_supabase/supabase.js";
+export const useCreateClient = defineStore("create", () => {
   const loading = ref(false);
   const signUpLoading = ref(false);
   const $loading = useLoading();
@@ -31,23 +18,29 @@ export const useCreateClient = defineStore("createClient", () => {
   );
 
   let authSubscription = null;
-  let hasHandledSession = false;
+  // let hasHandledSession = false;
 
-  const retrieve = ref(
-    JSON.parse(localStorage.getItem("retrieve")) || {
+  const retrieve = ref(() => {
+    const savedRetrieve = localStorage.getItem("retrieve");
+
+    if (savedRetrieve) {
+      return JSON.parse(savedRetrieve);
+    }
+
+    return {
       firstName: "",
       lastName: "",
       email: "",
       social_link: "",
-    }
-  );
+    };
+  });
 
   const handleUserSession = async (session) => {
     if (!session?.user) return;
-    if (hasHandledSession) return;
-    console.log(session);
+    // if (hasHandledSession) return;
+    // if (hasHandledSession && localStorage.getItem("retrieve")) return;
 
-    hasHandledSession = true;
+    // hasHandledSession = true;
 
     try {
       const user = session.user.user_metadata;
@@ -76,12 +69,15 @@ export const useCreateClient = defineStore("createClient", () => {
       console.log("existingUser", existingUser);
 
       retrieve.value = {
-        firstName: splitFullName[0] || userName,
-        lastName: splitFullName[1],
-        email: session.user.email,
-        number: session.user.phone,
-        social_link: existingUser?.social_link,
+        firstName:
+          splitFullName[0] ?? userName ?? existingUser?.first_name ?? "",
+        lastName: splitFullName[1] ?? existingUser?.last_name ?? "",
+        email: session.user.email ?? existingUser?.email ?? "",
+        number: session.user.phone ?? existingUser?.phone_number ?? "",
+        social_link: existingUser?.social_link ?? "",
       };
+
+      console.log(retrieve.value);
 
       localStorage.setItem("retrieve", JSON.stringify(retrieve.value));
     } catch (error) {
@@ -89,31 +85,49 @@ export const useCreateClient = defineStore("createClient", () => {
     }
   };
 
+  // const initAuth = async () => {
+  //   const {
+  //     data: { session },
+  //   } = await supabase.auth.getSession();
+
+  //   if (session?.user) {
+  //     await handleUserSession(session);
+  //   }
+
+  //   supabase.auth.onAuthStateChange(async (event, session) => {
+  //     if (event === "INITIAL_SESSION") {
+  //       return;
+  //     }
+
+  //     if (event === "SIGNED_IN" && session?.user) {
+  //       await handleUserSession(session);
+  //     }
+  //   });
+  // };
+
   const initAuth = async () => {
+    console.log("🔵 initAuth called");
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
 
-    if (session?.user) {
-      await handleUserSession(session);
-    }
+    console.log("🟢 Initial session retrieved:", !!session);
 
     supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event);
+      console.log("🟡 Auth state change:", event, !!session);
 
-      if (event === "INITIAL_SESSION") {
-        return;
-      }
-
-      if (event === "SIGNED_IN" && session?.user) {
+      if (
+        (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
+        session?.user
+      ) {
+        console.log("🟣 Calling handleUserSession");
         await handleUserSession(session);
       }
-
-      // if (event === "SIGNED_OUT") {
-      // }
     });
-  };
 
+    console.log("🔵 initAuth setup complete");
+  };
   const handleOnTimeSignIn = async () => {
     loading.value = true;
     const loader = $loading.show({
@@ -422,14 +436,6 @@ export const useCreateClient = defineStore("createClient", () => {
     isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
   };
 
-  // const profileStore = computed(() => ({
-  //   first_name: signUpUser.value.userName || retrieve.value.firstName || "",
-  //   last_name: retrieve.value.lastName || "",
-  //   email: signUpUser.value.email || retrieve.value.email || "",
-  //   phone_number: retrieve.value.number || "",
-  //   social_link: "",
-  // } ));
-
   const profileStore = computed(() => {
     const savedProfile = localStorage.getItem("profile");
     if (savedProfile) {
@@ -441,7 +447,7 @@ export const useCreateClient = defineStore("createClient", () => {
       last_name: retrieve.value.lastName || "",
       email: signUpUser.value.email || retrieve.value.email || "",
       phone_number: retrieve.value.number || "",
-      social_link: "",
+      social_link: retrieve.value.social_link,
     };
   });
 
@@ -516,9 +522,6 @@ export const useCreateClient = defineStore("createClient", () => {
     toast.success("Profile updated successfully");
     localStorage.setItem("profile", JSON.stringify(profileStore.value));
   };
-  console.log("profileStore", profileStore.value);
-  // console.log("siginUpUser", signUpUser.value);
-  // console.log("session", retrieve.value);
 
   const openFilePicker = () => {
     const fileDom = document.getElementById("fileTrigger");
@@ -587,8 +590,6 @@ export const useCreateClient = defineStore("createClient", () => {
         limit: 100,
         offset: 0,
       });
-
-    // const fileName = `${user.id}/avatar.jpg`;
 
     if (listError) {
       console.error("Error listing files:", listError);
