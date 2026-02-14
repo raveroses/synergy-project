@@ -74,7 +74,7 @@ export const useCreateClient = defineStore("create", () => {
           email: session.user.email,
           userName: data.first_name,
           accountNumber: data.account_number,
-          loginUrl: "http://localhost:5173/",
+          loginUrl: "https://synergy-fintech.vercel.app/",
           companyName: "SYNERGY",
         });
       } else if (error.code === "23505") {
