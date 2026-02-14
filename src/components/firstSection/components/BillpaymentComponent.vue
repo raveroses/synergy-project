@@ -134,7 +134,7 @@
 <script setup>
 import { Droplets, Flame, Search, Zap } from "lucide-vue-next";
 import { ref } from "vue";
-import { useTransaction } from "../../useTransaction";
+import { useTransaction } from "../../useTransaction.js";
 import { storeToRefs } from "pinia";
 import Spinner from "@/components/ui/spinner/Spinner.vue";
 const fundDetails = useTransaction();

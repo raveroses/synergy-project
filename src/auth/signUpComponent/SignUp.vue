@@ -98,7 +98,7 @@
 </template>
 
 <script setup>
-import { useCreateClient } from "@/_supabase/useCreateClient";
+import { useCreateClient } from "@/_supabase/useCreateClient.js";
 import { Eye, EyeOff } from "lucide-vue-next";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";

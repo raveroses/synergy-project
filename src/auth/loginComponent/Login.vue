@@ -93,7 +93,7 @@
 </template>
 <script setup>
 import { useRouter } from "vue-router";
-import { useCreateClient } from "@/_supabase/useCreateClient";
+import { useCreateClient } from "@/_supabase/useCreateClient.js";
 import { storeToRefs } from "pinia";
 import { Eye, EyeOff } from "lucide-vue-next";
 import { ref } from "vue";

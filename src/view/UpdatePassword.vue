@@ -63,7 +63,7 @@
 import { Eye, EyeOff, Lock } from "lucide-vue-next";
 
 import { useRouter } from "vue-router";
-import { useCreateClient } from "@/_supabase/useCreateClient";
+import { useCreateClient } from "@/_supabase/useCreateClient.js";
 import { storeToRefs } from "pinia";
 
 const store = useCreateClient();

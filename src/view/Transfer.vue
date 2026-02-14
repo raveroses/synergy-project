@@ -442,7 +442,7 @@
 </template>
 
 <script setup>
-import { useTransaction } from "../components/useTransaction";
+import { useTransaction } from "../components/useTransaction.js";
 import { storeToRefs } from "pinia";
 import {
   BadgePlus,

@@ -62,7 +62,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { computed, ref } from "vue";
-import { useTransaction } from "./useTransaction";
+import { useTransaction } from "./useTransaction.js";
 import { useCreateClient } from "../_supabase/useCreateClient.js";
 const transactionMenu = ref(["Name", "ID", "Status", "Amount", "Detail"]);
 
