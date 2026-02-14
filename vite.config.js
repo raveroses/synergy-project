@@ -21,6 +21,18 @@ export default defineConfig({
     },
   },
 
+  build: {
+    chunkSizeWarningLimit: 1000, // increase limit to avoid warnings
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vue: ["vue", "vue-router", "pinia"], // separate big libs
+          motion: ["motion-v"], // optional: split motion-v plugin
+        },
+      },
+    },
+  },
+
   app: {
     head: {
       link: [
