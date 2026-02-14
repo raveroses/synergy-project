@@ -6,6 +6,7 @@ import Components from "unplugin-vue-components/vite";
 import MotionResolver from "motion-v/resolver";
 
 export default defineConfig({
+  base: "/",
   plugins: [
     vue(),
     tailwindcss(),
