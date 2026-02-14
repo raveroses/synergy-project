@@ -80,7 +80,7 @@ td[data-table="table-detail"] {
   background: #555;
 }
 
-@media (max-width: "767px") {
+@media (max-width: 767px) {
   .table-container {
     width: 100%;
   }
