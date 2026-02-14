@@ -7,10 +7,20 @@
       <h1
         class="font-bold md:text-[23.18px] text-[20px] leading-[30.91px] text-[#101828]"
       >
-        Good Morning
+        {{ dateSetter }}
       </h1>
-      <div class="w-[38.64px] h-[38.64px]">
+      <div
+        class="w-[38.64px] h-[38.64px]"
+        v-if="
+          dateSetter.toLowerCase() === 'good morning' ||
+          dateSetter.toLowerCase() === 'good afternoon'
+        "
+      >
         <sunsetSvg />
+      </div>
+
+      <div class="w-10" v-else="dateSetter.toLowerCase() === 'good evening'">
+        <Moon />
       </div>
     </div>
     <div class="flex gap-5 text-[18px] items-center">
@@ -77,8 +87,20 @@
 import sunsetSvg from "../sunsetSvg.vue";
 import { useCreateClient } from "../../_supabase/useCreateClient.js";
 import { storeToRefs } from "pinia";
-
+import { ref } from "vue";
+import { Moon } from "lucide-vue-next";
 const store = useCreateClient();
 
 const { profileStore, imageGetter } = storeToRefs(store);
+
+const date = new Date();
+const dateGetter = date.getHours();
+let dateSetter = ref("");
+if (dateGetter >= 0 && dateGetter < 12) {
+  dateSetter.value = "Good morning";
+} else if (dateGetter >= 12 && dateGetter < 17) {
+  dateSetter.value = "Good afternoon";
+} else {
+  dateSetter.value = "Good Evening";
+}
 </script>

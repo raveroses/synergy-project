@@ -1,12 +1,11 @@
-<!-- @click="handleIsTransfer" -->
-<!-- @click="handleIsLoan" -->
-
 <template>
   <div
     class="flex md:flex-row flex-col justify-between items-start w-full relative"
   >
     <div class="md:w-[60%] w-full flex flex-col gap-6">
-      <h2 class="text-2xl font-bold">Welcome, Odekunle Waris</h2>
+      <h2 class="text-2xl font-bold">
+        {{ profileStore.first_name + " " + profileStore.last_name }}
+      </h2>
       <h2 class="text-[15px] font-semibold my-2">Quick actions</h2>
       <div class="flex items-center justify-between">
         <button
@@ -25,8 +24,8 @@
                     : null
           "
         >
-          <span >
-            <component :is="item.btnIcon" class="text-[12px]"/>
+          <span>
+            <component :is="item.btnIcon" class="text-[12px]" />
           </span>
           <span class="md:text-[15px] text-[10px]">{{ item.btnName }}</span>
         </button>
@@ -36,7 +35,9 @@
       >
         <div class="flex justify-between text-[#800080]">
           <div class="font-semibold">Account Number</div>
-          <div class="font-bold text-[18px]">8163700384</div>
+          <div class="font-bold text-[18px]">
+            {{ userTableInfo?.account_number ?? "" }}
+          </div>
         </div>
 
         <div class="flex justify-between items-center">
@@ -86,7 +87,9 @@
           <img src="/images/referral.avif" alt="referral images " />
         </div>
       </div>
-      <div class="flex md:gap-5 md:justify-start justify-between items-center md:my-0 my-3">
+      <div
+        class="flex md:gap-5 md:justify-start justify-between items-center md:my-0 my-3"
+      >
         <div
           class="top flex justify-between items-center gap-2 bg-gray-200 shadow p-2 rounded"
         >
@@ -141,7 +144,7 @@
                 <h2
                   class="font-bold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
                 >
-                  {{ history.accountName }}
+                  {{ history.accountName || profileStore.first_name }}
                 </h2>
               </td>
 
@@ -160,7 +163,8 @@
                     history.amount ||
                     history.transferAmount ||
                     history.loanAmount ||
-                    history.savingsMoney
+                    history.savingsMoney ||
+                    history.plans.price
                   }}
                 </h2>
               </td>
@@ -202,6 +206,7 @@
           type="text"
           class="w-full border border-[#800080] p-3 rounded outline-none"
           v-model="savingFund.accountNumber"
+          placeholder="Enter your account number"
         />
         <div>
           <span>Balance :</span> <span>{{ savingFund.savingsMoney }}</span>
@@ -213,12 +218,12 @@
         >
         <input
           type="text"
-          v-model="savingFund.accountName"
+          v-model="userTableName"
           class="w-full border border-[#800080] p-3 rounded outline-none"
           disabled
         />
         <div>
-          Account Name :<span> {{ savingFund.accountName }}</span>
+          Account Name :<span> {{ userTableName }}</span>
         </div>
       </div>
       <div>
@@ -231,6 +236,7 @@
             type="text"
             v-model="savingFund.savingsMoney"
             class="w-full border border-[#800080] p-3 rounded outline-none"
+            placeholder="Enter your deposit amount"
           />
         </div>
       </div>
@@ -244,28 +250,26 @@
   </div>
 
   <div
-    class="loan absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20 "
+    class="loan absolute top-20 md:left-[35%] md:w-[600px] w-full p-6 rounded-xl bg-white z-20"
     v-show="isLoan"
   >
     <div class="flex gap-40 font-bold my-10">
       <h1 class="text-[#800080] text-[20px]">Synergy</h1>
       <h2 class="text-xl text-center">Loan Application</h2>
     </div>
-    <form
-      class="flex flex-col gap-5"
-      @submit.prevent="userLoan.handleSubmission"
-    >
+    <form class="flex flex-col gap-5" @submit.prevent="handleLoanSubmission">
       <div>
         <label for="account name" class="text-[14px] font-semibold"
           >Account Number</label
         >
         <input
           type="text"
-          v-model="userLoan.accountNumber"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          v-model="loanUserDetail.accountNumber"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-300"
+          placeholder="Enter your account number"
         />
         <div>
-          <span>Balance :</span> <span>{{ userLoan.amount }}</span>
+          <span>Balance :</span> <span>{{ loanUserDetail.amount }}</span>
         </div>
       </div>
       <div>
@@ -274,12 +278,13 @@
         >
         <input
           type="text"
-          v-model="userLoan.accountName"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          v-model="userTableName"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-300"
+          placeholder="Please, enter your account name on the screen"
           disabled
         />
         <div>
-          Account Name :<span>{{ userLoan.accountName }}</span>
+          Account Name :<span>{{ userTableName }}</span>
         </div>
       </div>
       <div>
@@ -290,14 +295,15 @@
           <span class="bg-gray-400 text-white p-3 rounded"><NairaIcon /></span>
           <input
             type="text"
-            v-model="userLoan.loanAmount"
-            class="w-full border border-[#800080] p-3 rounded outline-none"
+            v-model="loanUserDetail.loanAmount"
+            class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-300"
+            placeholder="Please, enter your loan amount"
           />
         </div>
       </div>
       <button
         type="submit"
-        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold cursor-pointer"
       >
         Apply Loan
       </button>
@@ -322,7 +328,8 @@
         <input
           type="text"
           v-model="transferDetail.accountNumber"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+          placeholder="Please, enter your beneficiary's account number"
         />
         <div>
           <span>Balance :</span>
@@ -336,7 +343,8 @@
         <input
           type="text"
           v-model="transferDetail.accountName"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+          placeholder="Please, enter your beneficiary's name"
         />
         <div>
           Account Name :<span>{{ transferDetail.accountName }}</span>
@@ -351,13 +359,14 @@
           <input
             type="text"
             v-model="transferDetail.transferAmount"
-            class="w-full border border-[#800080] p-3 rounded outline-none"
+            class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+            placeholder="Please, enter your transfer amount"
           />
         </div>
       </div>
       <button
         type="submit"
-        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold cursor-pointer"
       >
         Send Money
       </button>
@@ -382,7 +391,8 @@
         <input
           type="text"
           v-model="repaymentDetail.accountNumber"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+          placeholder="Please, enter your account number"
         />
         <div>
           <span>Balance :</span> <span>{{ repaymentDetail.amount }}</span>
@@ -394,11 +404,13 @@
         >
         <input
           type="text"
-          v-model="repaymentDetail.accountName"
-          class="w-full border border-[#800080] p-3 rounded outline-none"
+          v-model="userTableName"
+          class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+          placeholder="Please, enter your account name"
+          disabled
         />
         <div>
-          Account Name :<span>{{ repaymentDetail.accountName }}</span>
+          Account Name :<span>{{ userTableName }}</span>
         </div>
       </div>
       <div>
@@ -410,13 +422,14 @@
           <input
             type="text"
             v-model="repaymentDetail.amount"
-            class="w-full border border-[#800080] p-3 rounded outline-none"
+            class="w-full border border-[#800080] p-3 rounded outline-none placeholder:text-gray-400"
+            placeholder="Please, enter your loan repayment amount"
           />
         </div>
       </div>
       <button
         type="submit"
-        class="bg-[#800080] text-white text-center p-3 rounded font-semibold"
+        class="bg-[#800080] text-white text-center p-3 rounded font-semibold cursor-pointer"
       >
         Pay Loan
       </button>
@@ -442,18 +455,20 @@ import {
 import NairaIcon from "../components/icons/NairaIcon.vue";
 import { onMounted } from "vue";
 import { onBeforeUnmount, ref } from "vue";
+import { useCreateClient } from "../_supabase/useCreateClient.js";
 const fundsDetail = useTransaction();
 const {
   isSavings,
   isLoan,
   formattedTotalSaving,
   savingFund,
-  userLoan,
+  loanUserDetail,
   isRepayment,
   isTransferFund,
   repaymentDetail,
   transferDetail,
   allHistory,
+  userTableName,
 } = storeToRefs(fundsDetail);
 
 const {
@@ -463,6 +478,7 @@ const {
   handleIsTransferFund,
   handleRepaymentSubmission,
   handleTransferSubmission,
+  handleLoanSubmission,
 } = fundsDetail;
 
 const btnList = ref([
@@ -490,7 +506,6 @@ onMounted(() => {
   const repayment = document.querySelector(".repayment");
   const transferFund = document.querySelector(".transferFund");
 
-  console.log(repayment);
   const handleDocumentClick = (e) => {
     const target = e.target;
 
@@ -522,5 +537,6 @@ onMounted(() => {
   });
 });
 
-console.log("all", allHistory.value);
+const store = useCreateClient();
+const { userTableInfo, profileStore } = storeToRefs(store);
 </script>

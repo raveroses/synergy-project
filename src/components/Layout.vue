@@ -44,8 +44,8 @@ import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
 const route = useRoute();
-const store = useCreateClient();
 const dashboardBtn = ref(null);
+const store = useCreateClient();
 const { isOpen } = storeToRefs(store);
 
 const handleOpen = () => {

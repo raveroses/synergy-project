@@ -7,7 +7,7 @@ import { LoadingPlugin } from "vue-loading-overlay";
 import "vue-loading-overlay/dist/css/index.css";
 import router from "./router/router.js";
 import { createPinia } from "pinia";
-import { useCreateClient } from "./_supabase/useCreateClient";
+// import { useCreateClient } from "./_supabase/useCreateClient.js";
 const app = createApp(App);
 const pinia = createPinia();
 
@@ -19,7 +19,7 @@ app.use(ToastPlugin, {
 });
 app.use(LoadingPlugin);
 
-const authStore = useCreateClient();
-authStore.initAuth();
+// const authStore = useCreateClient();
+// authStore.initAuth();
 
 app.mount("#app");

@@ -1,12 +1,17 @@
 <template>
   <div class="md:w-[40%] w-full flex-col z-0">
-    <div class="loan rounded-[5.8px] md:p-5 p-2 bg-[#FFFFFF]" v-if="currentValue">
+    <div
+      class="loan rounded-[5.8px] md:p-5 p-2 bg-[#FFFFFF]"
+      v-if="currentValue"
+    >
       <div class="flex justify-between">
         <h2 class="text-[20px] font-medium">
           {{
-            route.path.includes("loan")
-              ? loanDetail.accountName
-              : acctDetail.accountName
+            // route.path.includes("loan")
+            //   ? loanDetail.accountName
+            //   : acctDetail.accountName
+
+            profileStore.first_name
           }}
         </h2>
         <EllipsisVertical class="text-[36px]" />
@@ -83,6 +88,7 @@ import { computed } from "vue";
 const route = useRoute();
 import { useTransaction } from "./useTransaction";
 import { storeToRefs } from "pinia";
+import { useCreateClient } from "../_supabase/useCreateClient.js";
 import { ref } from "vue";
 const fundDetails = useTransaction();
 const {
@@ -117,7 +123,6 @@ const currentValue = computed(() => {
   } else if (route.path.includes("my-account")) {
     return acctDetail.value ?? { acctName: "", acctNumber: "", loanAmount: "" };
   }
-
 });
 
 let displayLimit = ref(3);
@@ -135,4 +140,7 @@ const beneficiariesDisplay = computed(() => {
 const handleAllDisplay = () => {
   displayLimit.value = lengthOfBeneficiaries.value;
 };
+
+const store = useCreateClient();
+const { profileStore } = storeToRefs(store);
 </script>

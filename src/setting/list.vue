@@ -8,7 +8,7 @@
       <li
         v-for="list in settingLists"
         :key="list.name"
-        class="bg-[#800080] mb-4 md:w-[200px] w-[150px] text-left font-semibold p-2.5  rounded-[5px] text-white flex gap-5"
+        class="bg-[#800080] mb-4 md:w-[200px] w-[150px] text-left font-semibold p-2.5 rounded-[5px] text-white flex gap-5 cursor-pointer"
       >
         <div>
           {{ list.name }}

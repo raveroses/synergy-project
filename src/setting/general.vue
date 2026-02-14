@@ -20,7 +20,7 @@
           class="flex items-center p-1 gap-1 rounded border border-gray-200"
           @click="openFilePicker"
         >
-          <div class="text-sm">
+          <div class="text-sm cursor-pointer">
             <input
               type="file"
               accept="image/png, image/jpeg, image/jpg, image/webp"
@@ -119,7 +119,7 @@
 
     <div class="flex justify-between items-center my-5">
       <div class="firstname flex flex-col gap-2">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
           <label for="first " class="font-semibold text-[16px]"
             >First name</label
           >
@@ -141,7 +141,7 @@
       </div>
 
       <div class="secondname flex flex-col gap-2">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
           <label for="lastName  " class="font-semibold text-[16px]"
             >Last name</label
           >
@@ -165,7 +165,7 @@
 
     <div class="flex flex-col gap-5">
       <div class="email flex flex-col gap-2">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
           <label for="email" class="font-semibold text-[16px]"
             >Email address</label
           >
@@ -183,7 +183,7 @@
         />
       </div>
       <div class="number flex flex-col gap-2">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
           <label for="email" class="font-semibold text-[16px]"
             >Phone Number</label
           >
@@ -204,7 +204,7 @@
         />
       </div>
       <div class="social flex flex-col gap-2">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center gap-2">
           <label for="email" class="font-semibold text-[16px]"
             >Linkedin Link</label
           >
@@ -272,7 +272,7 @@ onMounted(() => {
       isOpen.value = true;
 
       const matchingInput = inputs.value.find(
-        (input) => input.dataset.inputId === buttonName
+        (input) => input.dataset.inputId === buttonName,
       );
 
       if (matchingInput) {
@@ -296,5 +296,4 @@ const closeBtn = () => {
 onMounted(() => {
   getImageUrl();
 });
-
 </script>

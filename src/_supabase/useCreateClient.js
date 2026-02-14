@@ -3,6 +3,10 @@ import { useLoading } from "vue-loading-overlay";
 import { ref, computed } from "vue";
 import { useToast } from "vue-toast-notification";
 import { supabase } from ".././_supabase/supabase.js";
+import { sendEmail } from "../_supabase/sendEmail.js";
+let authListener = null;
+let userTableInfo = ref(null);
+
 export const useCreateClient = defineStore("create", () => {
   const loading = ref(false);
   const signUpLoading = ref(false);
@@ -14,33 +18,24 @@ export const useCreateClient = defineStore("create", () => {
       userName: "",
       email: "",
       password: "",
-    }
+    },
   );
 
-  let authSubscription = null;
-  // let hasHandledSession = false;
+  function generateAccountNumber() {
+    return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+  }
 
-  const retrieve = ref(() => {
-    const savedRetrieve = localStorage.getItem("retrieve");
-
-    if (savedRetrieve) {
-      return JSON.parse(savedRetrieve);
-    }
-
-    return {
+  const retrieve = ref(
+    JSON.parse(localStorage.getItem("retrieve")) || {
       firstName: "",
       lastName: "",
       email: "",
       social_link: "",
-    };
-  });
+    },
+  );
 
   const handleUserSession = async (session) => {
     if (!session?.user) return;
-    // if (hasHandledSession) return;
-    // if (hasHandledSession && localStorage.getItem("retrieve")) return;
-
-    // hasHandledSession = true;
 
     try {
       const user = session.user.user_metadata;
@@ -48,14 +43,14 @@ export const useCreateClient = defineStore("create", () => {
 
       const splitFullName = full_name?.split(" ") || [];
 
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select()
-        .eq("id", session.user.id)
-        .maybeSingle();
+      // let userData;
 
-      if (!existingUser) {
-        await supabase.from("users").insert({
+      // Try inserting directly
+      const acctNumberGenerator = generateAccountNumber();
+
+      const { data, error } = await supabase
+        .from("users")
+        .insert({
           id: session.user.id,
           first_name: splitFullName[0] ?? userName ?? "",
           last_name: splitFullName[1] ?? "",
@@ -63,21 +58,58 @@ export const useCreateClient = defineStore("create", () => {
           phone_number: "",
           social_link: "",
           image_url: picture ?? "",
+          account_number: acctNumberGenerator,
+        })
+        .select()
+        .single();
+
+      if (!error) {
+        console.log(data);
+
+        // New user created
+        // userData = data;
+        userTableInfo.value = data;
+
+        await sendEmail({
+          email: session.user.email,
+          userName: data.first_name,
+          accountNumber: data.account_number,
+          loginUrl: "http://localhost:5173/",
+          companyName: "SYNERGY",
         });
+      } else if (error.code === "23505") {
+        // User already exists → fetch it
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select()
+          .eq("id", session.user.id)
+          .single();
+
+        // userData = existingUser;
+        userTableInfo.value = existingUser;
+      } else {
+        throw error;
       }
 
-      console.log("existingUser", existingUser);
+      // 🔥 Now ALWAYS use userData
+      // userTableInfo.value = userData;
+      // console.log("inside", userTableInfo.value);
 
       retrieve.value = {
-        firstName:
-          splitFullName[0] ?? userName ?? existingUser?.first_name ?? "",
-        lastName: splitFullName[1] ?? existingUser?.last_name ?? "",
-        email: session.user.email ?? existingUser?.email ?? "",
-        number: session.user.phone ?? existingUser?.phone_number ?? "",
-        social_link: existingUser?.social_link ?? "",
+        firstName: userTableInfo.value.first_name ?? "",
+        lastName: userTableInfo.value.last_name ?? "",
+        email: userTableInfo.value.email ?? "",
+        number: userTableInfo.value.phone_number ?? "",
+        social_link: userTableInfo.value.social_link ?? "",
       };
 
-      console.log(retrieve.value);
+      // retrieve.value = {
+      //   firstName: userData.first_name ?? "",
+      //   lastName: userData.last_name ?? "",
+      //   email: userData.email ?? "",
+      //   number: userData.phone_number ?? "",
+      //   social_link: userData.social_link ?? "",
+      // };
 
       localStorage.setItem("retrieve", JSON.stringify(retrieve.value));
     } catch (error) {
@@ -90,44 +122,50 @@ export const useCreateClient = defineStore("create", () => {
   //     data: { session },
   //   } = await supabase.auth.getSession();
 
-  //   if (session?.user) {
-  //     await handleUserSession(session);
-  //   }
-
   //   supabase.auth.onAuthStateChange(async (event, session) => {
-  //     if (event === "INITIAL_SESSION") {
-  //       return;
-  //     }
-
-  //     if (event === "SIGNED_IN" && session?.user) {
+  //     if (
+  //       (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
+  //       session?.user
+  //     ) {
   //       await handleUserSession(session);
   //     }
   //   });
   // };
 
   const initAuth = async () => {
-    console.log("🔵 initAuth called");
+    if (authListener) return;
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    console.log("🟢 Initial session retrieved:", !!session);
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("🟡 Auth state change:", event, !!session);
-
-      if (
-        (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
-        session?.user
-      ) {
-        console.log("🟣 Calling handleUserSession");
-        await handleUserSession(session);
+      if (session?.user) {
+        // Run in background so UI isn't blocked
+        handleUserSession(session).catch((err) =>
+          console.error("Handle session error:", err),
+        );
       }
-    });
 
-    console.log("🔵 initAuth setup complete");
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (
+            (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
+            session?.user
+          ) {
+            handleUserSession(session).catch((err) =>
+              console.error("Handle session error:", err),
+            );
+          }
+        },
+      );
+
+      authListener = listener.subscription;
+    } catch (err) {
+      console.error("initAuth error:", err);
+    }
   };
+
   const handleOnTimeSignIn = async () => {
     loading.value = true;
     const loader = $loading.show({
@@ -218,7 +256,7 @@ export const useCreateClient = defineStore("create", () => {
         JSON.stringify({
           userName: signUpUser.value.userName,
           email: signUpUser.value.email,
-        })
+        }),
       );
 
       setTimeout(() => {
@@ -263,7 +301,7 @@ export const useCreateClient = defineStore("create", () => {
     }
 
     if (!signInPassword) {
-      signInPassword.value.passwordError = "Invalid Password";
+      signInError.value.passwordError = "Invalid Password";
       return false;
     }
 
@@ -314,7 +352,7 @@ export const useCreateClient = defineStore("create", () => {
   };
 
   const resetPasswordDetail = ref({
-    resetEmail: " ",
+    resetEmail: "",
   });
   const handleEmailResetValidation = () => {
     const email = resetPasswordDetail.value.resetEmail;
@@ -337,7 +375,7 @@ export const useCreateClient = defineStore("create", () => {
         resetPasswordDetail.value.resetEmail,
         {
           redirectTo: "http://localhost:5173/updatePassword",
-        }
+        },
       );
 
       if (error) {
@@ -465,15 +503,15 @@ export const useCreateClient = defineStore("create", () => {
     const socialLink = profileStore.value.social_link;
 
     if (!firstName) {
-      storingError.value.firstName = "First name is Invalid";
+      storingError.value.firstName = "first name is Invalid";
       return false;
     }
     if (!lastName) {
-      storingError.value.lastName = "Last name is Invalid";
+      storingError.value.lastName = "last name is Invalid";
       return false;
     }
     if (!email) {
-      storingError.value.email = "Email is Invalid";
+      storingError.value.email = "email is Invalid";
       return false;
     }
     if (isNaN(phoneNumber) || phoneNumber.length !== 11) {
@@ -482,9 +520,10 @@ export const useCreateClient = defineStore("create", () => {
     }
 
     if (!socialLink) {
-      storingError.value.socialLink = " Field is empty";
-      return;
+      storingError.value.socialLink = "Field is empty";
+      return false;
     }
+
     if (!isSocialLink.test(socialLink)) {
       storingError.value.socialLink = " Invalid URL";
       return false;
@@ -519,6 +558,13 @@ export const useCreateClient = defineStore("create", () => {
       return;
     }
 
+    storingError.value = {
+      firstName: "",
+      lastName: "",
+      email: "",
+      socialLink: "",
+      phoneNumber: "",
+    };
     toast.success("Profile updated successfully");
     localStorage.setItem("profile", JSON.stringify(profileStore.value));
   };
@@ -692,8 +738,8 @@ export const useCreateClient = defineStore("create", () => {
     imageGetter,
     handleDeleteUpload,
     getImageUrl,
-    imageGetter,
     handleLogout,
     isOpen,
+    userTableInfo,
   };
 });

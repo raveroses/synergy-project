@@ -31,21 +31,23 @@
               <h2
                 class="font-bold text-[15.46px] leading-[23.18px] tracking-0 text-[#1D2939] space-y-[15.46px]"
               >
-                {{ history.accountName }}
+                {{ history.accountName || profileStore.first_name }}
               </h2>
             </td>
 
-            <td>{{ history.id }}</td>
+            <td>{{ history.id || history.plans.id }}</td>
             <td v-if="'loanAmount' in history">loan</td>
             <td v-else-if="'savingsMoney' in history">savings</td>
             <td v-else-if="'amount' in history">repayment</td>
+            <td v-else-if="'plans' in history">Utility</td>
             <td v-else>Transfer</td>
             <td>
               {{
                 history.amount ||
                 history.savingsMoney ||
                 history.loanAmount ||
-                history.transferAmount
+                history.transferAmount ||
+                history.plans.price
               }}
             </td>
             <td>{{ history.date.split("T")[0] }}</td>
@@ -61,20 +63,20 @@
 import { storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { useTransaction } from "./useTransaction";
-
+import { useCreateClient } from "../_supabase/useCreateClient.js";
 const transactionMenu = ref(["Name", "ID", "Status", "Amount", "Detail"]);
 
 const fundsDetail = useTransaction();
+const store = useCreateClient();
+const { profileStore } = storeToRefs(store);
 const { allHistory } = storeToRefs(fundsDetail);
 
 let displayLimit = ref(5);
 let displayLimitHistory = computed(() =>
-  allHistory.value.slice(0, displayLimit.value)
+  allHistory.value.slice(0, displayLimit.value),
 );
 
 const handleSeeAll = () => {
   return (displayLimit.value = allHistory.value.length);
 };
-
-
 </script>

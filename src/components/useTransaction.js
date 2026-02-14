@@ -1,8 +1,69 @@
-import { defineStore } from "pinia";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { defineStore, storeToRefs } from "pinia";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useToast } from "vue-toast-notification";
+import { useCreateClient } from "../_supabase/useCreateClient.js";
+import { supabase } from "../_supabase/supabase";
 
 export const useTransaction = defineStore("detail", () => {
+  // const store = useCreateClient();
+  // const { userTableInfo } = storeToRefs(store);
+
+  // const isAcctNumberConverted = Number(userTableInfo?.value?.account_number);
+  // const firstName = userTableInfo?.value?.first_name ?? "";
+  // const lastName = userTableInfo?.value?.last_name ?? "";
+
+  // const userTableName = `${firstName} ${lastName}`.trim();
+
+  const userTableInfo = ref(null);
+
+  const isAcctNumberConverted = computed(() =>
+    userTableInfo.value?.account_number
+      ? Number(userTableInfo.value.account_number)
+      : null,
+  );
+
+  const firstName = computed(() => userTableInfo.value?.first_name ?? "");
+  const lastName = computed(() => userTableInfo.value?.last_name ?? "");
+
+  const userTableName = computed(() =>
+    `${firstName.value} ${lastName.value}`.toLowerCase().trim(),
+  );
+
+  const handleFetch = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select()
+      .eq("id", session.user.id)
+      .single();
+
+    userTableInfo.value = existingUser;
+
+    console.log("Fetched user:", existingUser);
+  };
+
+  let categoryValue = ref("");
+
+  let isCategory = computed({
+    get: () => categoryValue.value,
+    set: (val) => (categoryValue.value = val),
+  });
+
+  const handleCategory = (category) => {
+    isCategory.value = category.toLowerCase();
+  };
+  const formatNaira = (amount) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const isSavings = ref(false);
   const isLoan = ref(false);
   const isTransferFund = ref(false);
@@ -15,7 +76,7 @@ export const useTransaction = defineStore("detail", () => {
       amount: null,
       date: null,
       id: null,
-    }
+    },
   );
 
   let acctDetail = ref(
@@ -25,7 +86,7 @@ export const useTransaction = defineStore("detail", () => {
       savingsMoney: null,
       date: null,
       id: null,
-    }
+    },
   );
   let loanDetail = ref(
     JSON.parse(localStorage.getItem("loanDetail")) || {
@@ -34,7 +95,7 @@ export const useTransaction = defineStore("detail", () => {
       loanAmount: null,
       date: null,
       id: null,
-    }
+    },
   );
 
   let transferDetail = ref(
@@ -44,16 +105,59 @@ export const useTransaction = defineStore("detail", () => {
       transferAmount: null,
       date: null,
       id: null,
-    }
+    },
   );
 
   const repaymentHistory = ref(
-    JSON.parse(localStorage.getItem("repaymentHistory")) || []
+    JSON.parse(localStorage.getItem("repaymentHistory")) || [],
   );
 
   let transactionHistory = ref(
-    JSON.parse(localStorage.getItem("history")) || []
+    JSON.parse(localStorage.getItem("history")) || [],
   );
+
+  const billPayment = ref({
+    category: " ",
+    date: null,
+    plans: {},
+  });
+
+  const billHistory = ref(JSON.parse(localStorage.getItem("plan")) || []);
+
+  const handlePlan = (eachPlan) => {
+    if (!eachPlan) {
+      toast.error("Please select your plan");
+      return;
+    }
+
+    if (!isCategory.value) {
+      toast.error("Please select a category");
+      return;
+    }
+
+    if (eachPlan.price > totalSaving.value) {
+      toast.error("The current plan price has exceeded your savings");
+      return;
+    }
+
+    const paymentData = {
+      category: isCategory.value,
+      date: new Date().toISOString(),
+      plans: eachPlan,
+    };
+
+    billPayment.value = paymentData;
+
+    billHistory.value.push(paymentData);
+    transactionHistory.value.push(paymentData);
+
+    toast.success(
+      `You paid ${eachPlan.price} for ${isCategory.value} successfully`,
+    );
+
+    localStorage.setItem("history", JSON.stringify(transactionHistory.value));
+    localStorage.setItem("plan", JSON.stringify(billHistory.value));
+  };
 
   const totalSaving = computed(() => {
     return transactionHistory.value.reduce((acc, item) => {
@@ -62,6 +166,10 @@ export const useTransaction = defineStore("detail", () => {
       }
       if ("transferAmount" in item) {
         acc -= Number(item.transferAmount) || 0;
+      }
+
+      if ("plans" in item) {
+        acc -= Number(item.plans.price) || 0;
       }
       return acc;
     }, 0);
@@ -79,12 +187,11 @@ export const useTransaction = defineStore("detail", () => {
       repaymentHistory.value.length > 0
         ? repaymentHistory.value.reduce(
             (accum, cur) => accum + Number(cur.amount),
-            0
+            0,
           )
         : 0;
 
     if (totalBorrowed - totalRepaid < 0) {
-      toast.error("You have no outstanding debt to pay");
       return 0;
     }
     return totalBorrowed - totalRepaid;
@@ -123,7 +230,7 @@ export const useTransaction = defineStore("detail", () => {
   const savingFund = ref({
     savingsMoney: null,
     accountNumber: null,
-    accountName: "odekunle waris ",
+    accountName: "",
     handleValidation: function () {
       if (isNaN(Number(this.savingsMoney)) || !this.savingsMoney) {
         toast.error("Please, Input valid Amount");
@@ -131,19 +238,15 @@ export const useTransaction = defineStore("detail", () => {
         return;
       }
 
-      if (
-        isNaN(Number(this.accountNumber)) ||
-        !this.accountNumber ||
-        !this.accountNumber
-      ) {
+      if (isNaN(Number(this.accountNumber)) || !this.accountNumber) {
         toast.error("Please, Input valid Number");
         console.log("Please, Input valid Number");
         return;
       }
 
-      if (Number(this.accountNumber) !== Number(8163700384)) {
-        toast.error("Please, enter account number on the screen");
-        console.log("Please, enter account number on the screen");
+      if (Number(this.accountNumber) !== Number(isAcctNumberConverted.value)) {
+        toast.error("Please, enter your  account number ");
+        console.log("Please, enter your  account number ");
         return;
       }
       return true;
@@ -164,11 +267,14 @@ export const useTransaction = defineStore("detail", () => {
         transactionHistory.value.push(acctDetail.value);
         localStorage.setItem(
           "history",
-          JSON.stringify(transactionHistory.value)
+          JSON.stringify(transactionHistory.value),
         );
-
+        toast.success(
+          `You successfully deposited ${savingFund.value.savingsMoney}`,
+        );
         localStorage.setItem("acctDetail", JSON.stringify(acctDetail.value));
         console.log("Saved:", JSON.parse(JSON.stringify(acctDetail.value)));
+        this.accountName = "";
         this.accountNumber = "";
         this.savingsMoney = "";
       } catch (e) {
@@ -177,79 +283,91 @@ export const useTransaction = defineStore("detail", () => {
     },
   });
 
-  function Loans(loanAmount, accountNumber) {
-    this.accountName = "odekunle waris ";
-    this.accountNumber = accountNumber;
-    this.loanAmount = loanAmount;
-    this.handleValidation = function () {
-      if (isNaN(Number(this.loanAmount)) || !this.loanAmount) {
-        toast.error("Please, Input valid Amount");
-        console.log("Please, Input valid Amount");
-        return;
-      }
+  const loanUserDetail = ref({
+    accountName: "",
+    accountNumber: "",
+    loanAmount: "",
+  });
 
-      if (isNaN(Number(this.accountNumber)) || !this.accountNumber) {
-        toast.error("Please, Input valid Number");
-        console.log("Please, Input valid Number");
-        return;
-      }
+  const handleLoanValidation = () => {
+    if (
+      isNaN(Number(loanUserDetail.value.loanAmount)) ||
+      !loanUserDetail.value.loanAmount
+    ) {
+      toast.error("Please, Input valid Amount");
+      console.log("Please, Input valid Amount");
+      return false;
+    }
 
-      if (Number(this.accountNumber) !== 8163700384) {
-        toast.error("Please, enter account number on the screen");
-        console.log("Please, enter account number on the screen");
-        return;
-      }
+    if (
+      isNaN(Number(loanUserDetail.value.accountNumber)) ||
+      !loanUserDetail.value.accountNumber
+    ) {
+      toast.error("Please, Input valid Number");
+      console.log("Please, Input valid Number");
+      return false;
+    }
 
-      const saving = Number(totalSaving.value);
-      const loan = Number(this.loanAmount);
 
-      if (loan > 100000) {
-        toast.error("Sorry, we can't borrow you more than 100,000");
-        return;
-      }
+    if (
+      Number(loanUserDetail.value.accountNumber) !== isAcctNumberConverted.value
+    ) {
+      toast.error("Please, enter your account number ");
+      console.log("Please, enter your account number ");
+      return false;
+    }
 
-      if (loan >= 50000 && saving < 10000) {
-        toast.error(
-          "Eligibility failed. You must have at least ₦10,000 in savings."
-        );
-        return;
-      }
+    const saving = Number(totalSaving.value);
+    const loan = Number(loanUserDetail.value.loanAmount);
 
-      if (loan > 50000 && saving < 20000) {
-        toast.error(
-          "Eligibility failed. You must have at least ₦20,000 in savings."
-        );
-        return;
-      }
+    if (loan > 100000) {
+      toast.error("Sorry, we can't borrow you more than 100,000");
+      return false;
+    }
 
-      return true;
-    };
-    this.handleSubmission = function () {
-      try {
-        if (!this.handleValidation()) return;
-        loanDetail.value = {
-          accountName: "odekunle waris",
-          accountNumber: this.accountNumber,
-          loanAmount: this.loanAmount,
-          date: new Date().toISOString(),
-          id: crypto.randomUUID(),
-        };
+    if (loan >= 50000 && saving < 10000) {
+      toast.error(
+        "Eligibility failed. You must have at least ₦10,000 in savings.",
+      );
+      return false;
+    }
 
-        transactionHistory.value.push(loanDetail.value);
-        localStorage.setItem(
-          "history",
-          JSON.stringify(transactionHistory.value)
-        );
-        localStorage.setItem("loanDetail", JSON.stringify(loanDetail.value));
+    if (loan > 50000 && saving < 20000) {
+      toast.error(
+        "Eligibility failed. You must have at least ₦20,000 in savings.",
+      );
+      return false;
+    }
 
-        this.accountNumber = " ";
-        this.loanAmount = " ";
-      } catch (e) {
-        console.log(e.message);
-      }
-    };
-  }
-  const userLoan = ref(new Loans());
+    return true;
+  };
+
+  const handleLoanSubmission = () => {
+    console.log("I am clicked");
+    try {
+      if (!handleLoanValidation()) return;
+      loanDetail.value = {
+        accountName: loanUserDetail.value.accountName,
+        accountNumber: loanUserDetail.value.accountNumber,
+        loanAmount: loanUserDetail.value.loanAmount,
+        date: new Date().toISOString(),
+        id: crypto.randomUUID(),
+      };
+
+      transactionHistory.value.push(loanDetail.value);
+      localStorage.setItem("history", JSON.stringify(transactionHistory.value));
+
+      localStorage.setItem("loanDetail", JSON.stringify(loanDetail.value));
+      toast.success(
+        `You successfully secured loan of ${loanUserDetail.value.loanAmount}`,
+      );
+
+      loanUserDetail.value.accountNumber = "";
+      loanUserDetail.value.loanAmount = "";
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
 
   const handleRepaymentValidation = () => {
     if (
@@ -258,33 +376,34 @@ export const useTransaction = defineStore("detail", () => {
     ) {
       toast.error("Please, Input valid Amount");
       console.log("Please, Input valid Amount");
-      return;
+      return false;
     }
-
-    if (
-      !repaymentDetail.value.accountName ||
-      repaymentDetail.value.accountName.toLowerCase().trim() !==
-        "odekunle waris".toLowerCase().trim()
-    ) {
-      toast.error("Please, Input valid Account Name");
-      console.log("Please, Input valid Account Name");
-      return;
+    if (repaymentDetail.value.amount > totalLoan.value) {
+      toast.error(
+        "Please, your repayment is more than your debt , kindly check the amount",
+      );
+      console.log(
+        "Please, your repayment is more than your debt , kindly check the amount",
+      );
+      return false;
     }
 
     if (
       isNaN(Number(repaymentDetail.value.accountNumber)) ||
-      !repaymentDetail.value.accountNumber ||
       !repaymentDetail.value.accountNumber
     ) {
       toast.error("Please, Input valid Number");
       console.log("Please, Input valid Number");
-      return;
+      return false;
     }
 
-    if (Number(repaymentDetail.value.accountNumber) !== Number(8163700384)) {
-      toast.error("Please, enter account number on the screen");
-      console.log("Please, enter account number on the screen");
-      return;
+    if (
+      Number(repaymentDetail.value.accountNumber) !==
+      isAcctNumberConverted.value
+    ) {
+      toast.error("Please, enter your account number ");
+      console.log("Please, enter your account number ");
+      return false;
     }
     return true;
   };
@@ -294,8 +413,8 @@ export const useTransaction = defineStore("detail", () => {
       if (!handleRepaymentValidation()) return;
 
       if (loanDetail.value.loanAmount <= 0) {
-        toast.error("You have no debt to pay");
-        console.log("You have no debt to pay");
+        toast.error("You have no outstanding debt to pay");
+        console.log("You have no outstanding debt to pay");
         return;
       }
 
@@ -310,18 +429,21 @@ export const useTransaction = defineStore("detail", () => {
       repaymentHistory.value.push(repaymentDetail.value);
       localStorage.setItem(
         "repaymentHistory",
-        JSON.stringify(repaymentHistory.value)
+        JSON.stringify(repaymentHistory.value),
+      );
+
+      toast.success(
+        `You successfully repayed loan of ${repaymentDetail.value.amount}`,
       );
 
       console.log("Saved:", JSON.parse(JSON.stringify(repaymentDetail.value)));
       repaymentDetail.value = {
-        accountName: " ",
         accountNumber: " ",
         amount: " ",
       };
       localStorage.setItem(
         "repaymentDetail",
-        JSON.stringify(repaymentDetail.value)
+        JSON.stringify(repaymentDetail.value),
       );
     } catch (e) {
       console.log(e.message);
@@ -336,10 +458,10 @@ export const useTransaction = defineStore("detail", () => {
       return;
     }
 
-    if (!transferDetail.value.accountName) {
-      toast.error("Please, Input valid Account Name");
-      return;
-    }
+    // if (!transferDetail.value.accountName) {
+    //   toast.error("Please, Input valid Account Name");
+    //   return;
+    // }
 
     if (
       isNaN(Number(transferDetail.value.accountNumber)) ||
@@ -360,7 +482,7 @@ export const useTransaction = defineStore("detail", () => {
     try {
       if (!handleTransferValidation()) return;
 
-      if (acctDetail.value.savingsMoney <= 0) {
+      if (Number(totalSaving.value) <= 0) {
         toast.error(" Insufficient Funds");
         console.log("Insufficient Funds");
         return;
@@ -377,7 +499,10 @@ export const useTransaction = defineStore("detail", () => {
       transactionHistory.value.push(transferDetail.value);
       localStorage.setItem("history", JSON.stringify(transactionHistory.value));
 
-      console.log("Saved:", JSON.parse(JSON.stringify(transferDetail.value)));
+      // console.log("Saved:", JSON.parse(JSON.stringify(transferDetail.value)));
+      toast.success(
+        `You successfully transfered of ${transferDetail.value.transferAmount}`,
+      );
       transferDetail.value = {
         accountName: " ",
         accountNumber: " ",
@@ -385,7 +510,7 @@ export const useTransaction = defineStore("detail", () => {
       };
       localStorage.setItem(
         "transferDetail",
-        JSON.stringify(transferDetail.value)
+        JSON.stringify(transferDetail.value),
       );
     } catch (e) {
       console.log(e.message);
@@ -397,49 +522,6 @@ export const useTransaction = defineStore("detail", () => {
     ...repaymentHistory.value,
     ...transactionHistory.value,
   ]);
-
-  let categoryValue = ref("");
-
-  let isCategory = computed({
-    get: () => categoryValue.value,
-    set: (val) => (categoryValue.value = val),
-  });
-
-  const handleCategory = (category) => {
-    isCategory.value = category.toLowerCase();
-  };
-  const formatNaira = (amount) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-  const billPayment = ref({
-    category: " ",
-    date: null,
-    plans: {},
-  });
-
-  const billHistory = ref(JSON.parse(localStorage.getItem("plan")) || []);
-
-  const handlePlan = (eachPlan) => {
-    if (!billPayment.value) {
-      toast.error("Please,Select your plan");
-      return;
-    }
-
-    if (isCategory.value && eachPlan) {
-      billPayment.value = {
-        category: isCategory.value,
-        date: new Date().toISOString(),
-        plans: eachPlan,
-      };
-    }
-    billHistory.value.push(billPayment.value);
-    localStorage.setItem("plan", JSON.stringify(billHistory.value));
-  };
 
   const searchValue = ref("");
   const searchingResult = ref([]);
@@ -458,7 +540,7 @@ export const useTransaction = defineStore("detail", () => {
           (plan) =>
             plan.id === searchValue.value ||
             plan.category === searchValue.value ||
-            Number(plan.price) === Number(searchValue.value)
+            Number(plan.price) === Number(searchValue.value),
         );
 
         searchingResult.value = searchFilter;
@@ -468,6 +550,9 @@ export const useTransaction = defineStore("detail", () => {
     } finally {
     }
   };
+  onMounted(() => {
+    handleFetch();
+  });
 
   return {
     isSavings,
@@ -477,7 +562,8 @@ export const useTransaction = defineStore("detail", () => {
     handleIsisSavings,
     handleIsLoan,
     savingFund,
-    userLoan,
+    loanUserDetail,
+    handleLoanSubmission,
     formattedTotalLoan,
     formattedTotalSaving,
     handleIsTransferFund,
@@ -500,5 +586,7 @@ export const useTransaction = defineStore("detail", () => {
     searchingResult,
     handleSearch,
     isLoading,
+    handleFetch,
+    userTableName,
   };
 });
