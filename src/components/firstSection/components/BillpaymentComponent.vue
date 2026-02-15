@@ -22,7 +22,7 @@
           'w-20 text-center  mx-auto rounded p-1 cursor-pointer transition-all duration-300 hover:bg-gray-300 hover:text-[#800080]',
           isCategory === item.bill.toLowerCase()
             ? 'bg-white text-[#800080]'
-            : 'text-white bg-transparent'
+            : 'text-white bg-transparent',
         ]"
         v-for="item in billList"
         :key="item.bill"
@@ -33,12 +33,12 @@
       </div>
     </div>
     <div
-      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3 gap-3 p-5"
       v-if="isCategory === 'electricity'"
     >
       <div
         v-for="eachSub in electricityPrice"
-        class="bg-white rounded p-2 text-center md:w-[150px] w-[100px] h-[120px] cursor-pointer"
+        class="bg-white rounded p-2 text-center md:w-[150px] w-[130] h-[120px] cursor-pointer"
         @click="handlePlan(eachSub)"
       >
         <p class="text-md italic">
@@ -53,12 +53,12 @@
     </div>
 
     <div
-      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3 gap-3 p-5"
       v-if="isCategory === 'water'"
     >
       <div
         v-for="eachSub in waterPrice"
-        class="bg-white rounded p-2 text-center w-[150px] h-[120px] cursor-pointer"
+        class="bg-white rounded p-2 text-center md:w-[150px] w-[130] h-[120px] cursor-pointer"
         @click="handlePlan(eachSub)"
       >
         <p class="text-md italic">
@@ -71,12 +71,12 @@
       </div>
     </div>
     <div
-      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3 gap-3 p-5"
       v-if="isCategory === 'gas'"
     >
       <div
         v-for="eachSub in gasPrice"
-        class="bg-white rounded p-2 text-center w-[150px] h-[120px] cursor-pointer"
+        class="bg-white rounded p-2 text-center md:w-[150px] w-[130] h-[120px] cursor-pointer"
         @click="handlePlan(eachSub)"
       >
         <p class="text-md italic">
@@ -89,10 +89,10 @@
       </div>
     </div>
 
-    <div class="my-10 ">
+    <div class="my-10">
       <h1 class="text-2xl font-semibold">Invoice</h1>
 
-      <table class="my-10 ">
+      <table class="my-10">
         <thead>
           <tr>
             <th>Invoice</th>
