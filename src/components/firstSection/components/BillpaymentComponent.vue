@@ -22,7 +22,7 @@
           'w-20 text-center  mx-auto rounded p-1 cursor-pointer transition-all duration-300 hover:bg-gray-300 hover:text-[#800080]',
           isCategory === item.bill.toLowerCase()
             ? 'bg-white text-[#800080]'
-            : 'text-white bg-transparent',
+            : 'text-white bg-transparent'
         ]"
         v-for="item in billList"
         :key="item.bill"
@@ -38,7 +38,7 @@
     >
       <div
         v-for="eachSub in electricityPrice"
-        class="bg-white rounded p-2 text-center w-[150px] h-[120px] cursor-pointer"
+        class="bg-white rounded p-2 text-center md:w-[150px] w-[100px] h-[120px] cursor-pointer"
         @click="handlePlan(eachSub)"
       >
         <p class="text-md italic">
