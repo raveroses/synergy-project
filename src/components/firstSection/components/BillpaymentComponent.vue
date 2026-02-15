@@ -33,7 +33,7 @@
       </div>
     </div>
     <div
-      class="bg-[#800080] w-full grid grid-cols-4 gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
       v-if="isCategory === 'electricity'"
     >
       <div
@@ -53,7 +53,7 @@
     </div>
 
     <div
-      class="bg-[#800080] w-full grid grid-cols-4 gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
       v-if="isCategory === 'water'"
     >
       <div
@@ -71,7 +71,7 @@
       </div>
     </div>
     <div
-      class="bg-[#800080] w-full grid grid-cols-4 gap-3 p-5"
+      class="bg-[#800080] w-full grid md:grid-cols-4 grid-cols-3  gap-3 p-5"
       v-if="isCategory === 'gas'"
     >
       <div
