@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useLoading } from "vue-loading-overlay";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { toast } from "vue3-toastify";
 import { supabase } from ".././_supabase/supabase.js";
 import { sendEmail } from "../_supabase/sendEmail.js";
@@ -135,18 +135,9 @@ export const useCreateClient = defineStore("create", () => {
             (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
             session?.user
           ) {
-            const isNewUser =
-              session?.user?.aud === "authenticated" &&
-              session?.user?.created_at === session?.user?.last_sign_in_at;
-
-            if (isNewUser) {
-              handleUserSession(session).catch((err) =>
-                console.error("Handle session error:", err),
-              );
-              toast.success("Welcome! Your account was created.");
-            } else {
-              toast.success("Logged in successfully!");
-            }
+            handleUserSession(session).catch((err) =>
+              console.error("Handle session error:", err),
+            );
           }
         },
       );
@@ -321,7 +312,7 @@ export const useCreateClient = defineStore("create", () => {
         return { data: null, error };
       }
 
-      toast.success("Redirecting to Homepage");
+      // toast.success("Redirecting to Homepage");
 
       signIn.value = {
         email: "",
@@ -700,6 +691,27 @@ export const useCreateClient = defineStore("create", () => {
 
   const isOpen = ref(false);
 
+  onMounted(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const toastShown = sessionStorage.getItem("loginToastShown");
+
+        if (!toastShown) {
+          toast.success("Logged in successfully!");
+          sessionStorage.setItem("loginToastShown", "true");
+        }
+
+        // handleUserSession logic can always run
+        handleUserSession(session).catch((err) =>
+          console.error("Handle session error:", err),
+        );
+      }
+
+      if (event === "SIGNED_OUT") {
+        sessionStorage.removeItem("loginToastShown");
+      }
+    });
+  });
   return {
     supabase,
     handleOnTimeSignIn,
