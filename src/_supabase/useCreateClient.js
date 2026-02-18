@@ -67,13 +67,13 @@ export const useCreateClient = defineStore("create", () => {
 
         userTableInfo.value = data;
 
-        // await sendEmail({
-        //   email: session.user.email,
-        //   userName: data.first_name,
-        //   accountNumber: data.account_number,
-        //   loginUrl: "https://synergy-fintech.vercel.app//",
-        //   companyName: "SYNERGY",
-        // });
+        await sendEmail({
+          email: session.user.email,
+          userName: data.first_name,
+          accountNumber: data.account_number,
+          loginUrl: "https://synergy-fintech.vercel.app//",
+          companyName: "SYNERGY",
+        });
       } else if (error.code === "23505") {
         // User already exists → fetch it
         const { data: existingUser } = await supabase
