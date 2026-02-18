@@ -2,11 +2,11 @@ import { defineStore } from "pinia";
 import { useLoading } from "vue-loading-overlay";
 import { ref, computed } from "vue";
 import { toast } from "vue3-toastify";
-
 import { supabase } from ".././_supabase/supabase.js";
 import { sendEmail } from "../_supabase/sendEmail.js";
 let authListener = null;
 let userTableInfo = ref(null);
+const websiteUrl = import.meta.env.VITE_WEBSITE_URL;
 
 export const useCreateClient = defineStore("create", () => {
   const loading = ref(false);
@@ -164,7 +164,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `http://localhost:5173/`,
+          redirectTo: VITE_WEBSITE_URL,
         },
       });
 
@@ -364,7 +364,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.resetPasswordForEmail(
         resetPasswordDetail.value.resetEmail,
         {
-          redirectTo: "http://localhost:5173/updatePassword",
+          redirectTo: `${VITE_WEBSITE_URL}/updatePassword`,
         },
       );
 
