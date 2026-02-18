@@ -8,6 +8,8 @@ let authListener = null;
 let userTableInfo = ref(null);
 const websiteUrl = import.meta.env.VITE_WEBSITE_URL;
 
+console.log(websiteUrl);
+
 export const useCreateClient = defineStore("create", () => {
   const loading = ref(false);
   const signUpLoading = ref(false);
@@ -164,13 +166,13 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: VITE_WEBSITE_URL,
+          redirectTo: websiteUrl,
         },
       });
 
       if (error) {
         toast.error(error.message);
-        loader.hide();
+        // loader.hide();
         loading.value = false;
         return { data: null, error };
       }
@@ -364,7 +366,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.resetPasswordForEmail(
         resetPasswordDetail.value.resetEmail,
         {
-          redirectTo: `${VITE_WEBSITE_URL}/updatePassword`,
+          redirectTo: `${websiteUrl}/updatePassword`,
         },
       );
 
