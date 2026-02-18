@@ -1,7 +1,8 @@
 import { defineStore } from "pinia";
 import { useLoading } from "vue-loading-overlay";
 import { ref, computed } from "vue";
-import { useToast } from "vue-toast-notification";
+import { toast } from "vue3-toastify";
+
 import { supabase } from ".././_supabase/supabase.js";
 import { sendEmail } from "../_supabase/sendEmail.js";
 let authListener = null;
@@ -11,7 +12,6 @@ export const useCreateClient = defineStore("create", () => {
   const loading = ref(false);
   const signUpLoading = ref(false);
   const $loading = useLoading();
-  const toast = useToast();
   const signUpUserError = ref({});
   const signUpUser = ref(
     JSON.parse(localStorage.getItem("userAcctCreationDetail")) || {
@@ -43,9 +43,6 @@ export const useCreateClient = defineStore("create", () => {
 
       const splitFullName = full_name?.split(" ") || [];
 
-      // let userData;
-
-      // Try inserting directly
       const acctNumberGenerator = generateAccountNumber();
 
       const { data, error } = await supabase
@@ -66,17 +63,16 @@ export const useCreateClient = defineStore("create", () => {
       if (!error) {
         console.log(data);
 
-        // New user created
-        // userData = data;
+       
         userTableInfo.value = data;
 
-        await sendEmail({
-          email: session.user.email,
-          userName: data.first_name,
-          accountNumber: data.account_number,
-          loginUrl: "https://synergy-fintech.vercel.app/",
-          companyName: "SYNERGY",
-        });
+        // await sendEmail({
+        //   email: session.user.email,
+        //   userName: data.first_name,
+        //   accountNumber: data.account_number,
+        //   loginUrl: "https://synergy-fintech.vercel.app//",
+        //   companyName: "SYNERGY",
+        // });
       } else if (error.code === "23505") {
         // User already exists → fetch it
         const { data: existingUser } = await supabase
@@ -116,21 +112,6 @@ export const useCreateClient = defineStore("create", () => {
       console.error("handleUserSession error:", error);
     }
   };
-
-  // const initAuth = async () => {
-  //   const {
-  //     data: { session },
-  //   } = await supabase.auth.getSession();
-
-  //   supabase.auth.onAuthStateChange(async (event, session) => {
-  //     if (
-  //       (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
-  //       session?.user
-  //     ) {
-  //       await handleUserSession(session);
-  //     }
-  //   });
-  // };
 
   const initAuth = async () => {
     if (authListener) return;
@@ -251,6 +232,7 @@ export const useCreateClient = defineStore("create", () => {
         return { data: null, error };
       }
 
+      toast.success("Account created successfully");
       localStorage.setItem(
         "userAcctCreationDetail",
         JSON.stringify({
@@ -330,6 +312,8 @@ export const useCreateClient = defineStore("create", () => {
         signInLoading.value = false;
         return { data: null, error };
       }
+
+      toast.success("Redirecting to Homepage");
 
       signIn.value = {
         email: "",

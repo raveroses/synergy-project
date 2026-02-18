@@ -1,19 +1,10 @@
 import { defineStore, storeToRefs } from "pinia";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { useToast } from "vue-toast-notification";
+import { toast } from "vue3-toastify";
 import { useCreateClient } from "../_supabase/useCreateClient.js";
 import { supabase } from "../_supabase/supabase";
 
 export const useTransaction = defineStore("detail", () => {
-  // const store = useCreateClient();
-  // const { userTableInfo } = storeToRefs(store);
-
-  // const isAcctNumberConverted = Number(userTableInfo?.value?.account_number);
-  // const firstName = userTableInfo?.value?.first_name ?? "";
-  // const lastName = userTableInfo?.value?.last_name ?? "";
-
-  // const userTableName = `${firstName} ${lastName}`.trim();
-
   const userTableInfo = ref(null);
 
   const isAcctNumberConverted = computed(() =>
@@ -68,7 +59,6 @@ export const useTransaction = defineStore("detail", () => {
   const isLoan = ref(false);
   const isTransferFund = ref(false);
   const isRepayment = ref(false);
-  const toast = useToast();
   const repaymentDetail = ref(
     JSON.parse(localStorage.getItem("repaymentDetail")) || {
       accountName: "",
@@ -307,7 +297,6 @@ export const useTransaction = defineStore("detail", () => {
       console.log("Please, Input valid Number");
       return false;
     }
-
 
     if (
       Number(loanUserDetail.value.accountNumber) !== isAcctNumberConverted.value
