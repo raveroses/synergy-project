@@ -135,17 +135,18 @@ export const useCreateClient = defineStore("create", () => {
             (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
             session?.user
           ) {
-            handleUserSession(session).catch((err) =>
-              console.error("Handle session error:", err),
-            );
-            if (!sessionStorage.getItem("loginToastShown")) {
-              toast.success("Logged in successfully");
-              sessionStorage.setItem("loginToastShown", "true");
-            }
-          }
+            const isNewUser =
+              session?.user?.aud === "authenticated" &&
+              session?.user?.created_at === session?.user?.last_sign_in_at;
 
-          if (event === "SIGNED_OUT") {
-            sessionStorage.removeItem("loginToastShown");
+            if (isNewUser) {
+              handleUserSession(session).catch((err) =>
+                console.error("Handle session error:", err),
+              );
+              toast.success("Welcome! Your account was created.");
+            } else {
+              toast.success("Logged in successfully!");
+            }
           }
         },
       );
@@ -240,7 +241,6 @@ export const useCreateClient = defineStore("create", () => {
         return { data: null, error };
       }
 
-      toast.success("Account created successfully");
       localStorage.setItem(
         "userAcctCreationDetail",
         JSON.stringify({
