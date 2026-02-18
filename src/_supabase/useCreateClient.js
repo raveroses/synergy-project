@@ -63,7 +63,6 @@ export const useCreateClient = defineStore("create", () => {
       if (!error) {
         console.log(data);
 
-       
         userTableInfo.value = data;
 
         // await sendEmail({
@@ -137,6 +136,14 @@ export const useCreateClient = defineStore("create", () => {
             handleUserSession(session).catch((err) =>
               console.error("Handle session error:", err),
             );
+            if (!sessionStorage.getItem("loginToastShown")) {
+              toast.success("Logged in successfully");
+              sessionStorage.setItem("loginToastShown", "true");
+            }
+          }
+
+          if (event === "SIGNED_OUT") {
+            sessionStorage.removeItem("loginToastShown");
           }
         },
       );
@@ -149,11 +156,10 @@ export const useCreateClient = defineStore("create", () => {
 
   const handleOnTimeSignIn = async () => {
     loading.value = true;
-    const loader = $loading.show({
-      color: "#800080",
-      backgroundColor: "#ffffff",
-    });
-
+    // const loader = $loading.show({
+    //   color: "#800080",
+    //   backgroundColor: "#ffffff",
+    // });
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
