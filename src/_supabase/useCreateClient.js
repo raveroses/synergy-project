@@ -6,7 +6,7 @@ import { supabase } from ".././_supabase/supabase.js";
 import { sendEmail } from "../_supabase/sendEmail.js";
 let authListener = null;
 let userTableInfo = ref(null);
-const websiteUrl = import.meta.env.VITE_WEBSITE_URL;
+const websiteUrl = import.meta.env.websiteUrl;
 
 console.log(websiteUrl);
 
@@ -155,7 +155,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: VITE_WEBSITE_URL,
+          redirectTo: websiteUrl,
         },
       });
 
@@ -354,7 +354,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.resetPasswordForEmail(
         resetPasswordDetail.value.resetEmail,
         {
-          redirectTo: `${VITE_WEBSITE_URL}/updatePassword`,
+          redirectTo: `${websiteUrl}/updatePassword`,
         },
       );
 
