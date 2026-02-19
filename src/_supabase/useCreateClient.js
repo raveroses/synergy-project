@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useLoading } from "vue-loading-overlay";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { toast } from "vue3-toastify";
 import { supabase } from ".././_supabase/supabase.js";
 import { sendEmail } from "../_supabase/sendEmail.js";
@@ -150,21 +150,17 @@ export const useCreateClient = defineStore("create", () => {
 
   const handleOnTimeSignIn = async () => {
     loading.value = true;
-    // const loader = $loading.show({
-    //   color: "#800080",
-    //   backgroundColor: "#ffffff",
-    // });
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: websiteUrl,
+          redirectTo: VITE_WEBSITE_URL,
         },
       });
 
       if (error) {
         toast.error(error.message);
-        // loader.hide();
         loading.value = false;
         return { data: null, error };
       }
@@ -232,6 +228,7 @@ export const useCreateClient = defineStore("create", () => {
         return { data: null, error };
       }
 
+      toast.success("Account created successfully");
       localStorage.setItem(
         "userAcctCreationDetail",
         JSON.stringify({
@@ -312,7 +309,7 @@ export const useCreateClient = defineStore("create", () => {
         return { data: null, error };
       }
 
-      // toast.success("Redirecting to Homepage");
+      toast.success("Redirecting to Homepage");
 
       signIn.value = {
         email: "",
@@ -357,7 +354,7 @@ export const useCreateClient = defineStore("create", () => {
       const { data, error } = await supabase.auth.resetPasswordForEmail(
         resetPasswordDetail.value.resetEmail,
         {
-          redirectTo: `${websiteUrl}/updatePassword`,
+          redirectTo: `${VITE_WEBSITE_URL}/updatePassword`,
         },
       );
 
@@ -691,27 +688,6 @@ export const useCreateClient = defineStore("create", () => {
 
   const isOpen = ref(false);
 
-  onMounted(() => {
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        const toastShown = sessionStorage.getItem("loginToastShown");
-
-        if (!toastShown) {
-          toast.success("Logged in successfully!");
-          sessionStorage.setItem("loginToastShown", "true");
-        }
-
-        // handleUserSession logic can always run
-        handleUserSession(session).catch((err) =>
-          console.error("Handle session error:", err),
-        );
-      }
-
-      if (event === "SIGNED_OUT") {
-        sessionStorage.removeItem("loginToastShown");
-      }
-    });
-  });
   return {
     supabase,
     handleOnTimeSignIn,
